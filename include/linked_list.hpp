@@ -74,7 +74,7 @@ class LinkedList : public ICollection<T> {
 
   T Get(std::size_t index) const override {
     if (index > static_cast<std::size_t>(static_cast<int>(index))) {
-      throw IndexOutOfRange("LinkedList: index is too large");
+      throw IndexOutOfRange("Ошибка, индекс не из диапазона");
     }
     return Get(static_cast<int>(index));
   }
