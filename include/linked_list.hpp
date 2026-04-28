@@ -3,8 +3,8 @@
 #include <cstddef>
 #include <utility>
 
-#include "lab2/exceptions.hpp"
-#include "lab2/icollection.hpp"
+#include "exceptions.hpp"
+#include "icollection.hpp"
 
 namespace lab2 {
 
