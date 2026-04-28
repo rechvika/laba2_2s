@@ -7,7 +7,6 @@
 #include "dynamic_array.hpp"
 #include "sequence.hpp"
 
-
 namespace lab2 {
 
 class BitSequence : public Sequence<Bit> {
@@ -100,7 +99,7 @@ class BitSequence : public Sequence<Bit> {
     }
     const int start = NormalizeSliceIndex(index);
     const int available = length_ - start;
-    const int remove_count = count < available ? count : available;
+    const int remove_count = (count < available) ? count : available;
     BitSequence rebuilt;
     for (int i = 0; i < start; ++i) {
       rebuilt.Append(Get(i));
