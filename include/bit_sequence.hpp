@@ -7,8 +7,6 @@
 #include "dynamic_array.hpp"
 #include "sequence.hpp"
 
-//unsiged int
-//итераторы
 
 namespace lab2 {
 
@@ -33,7 +31,7 @@ class BitSequence : public Sequence<Bit> {
     }
     ResizeBits(count);
     for (int i = 0; i < count; ++i) {
-      SetBitInternal(i, static_cast<bool>(items[i]));
+      SetBitInternal(i, static_cast<unsigned int>(items[i]));
     }
   }
 
@@ -75,7 +73,7 @@ class BitSequence : public Sequence<Bit> {
 
   Sequence<Bit>* Append(const Bit& item) override {
     ResizeBits(length_ + 1);
-    SetBitInternal(length_ - 1, static_cast<bool>(item));
+    SetBitInternal(length_ - 1, static_cast<unsigned int>(item));
     return this;
   }
 
@@ -92,8 +90,98 @@ class BitSequence : public Sequence<Bit> {
 
   Sequence<Bit>* Set(int index, const Bit& item) override {
     ValidateIndex(index);
-    SetBitInternal(index, static_cast<bool>(item));
+    SetBitInternal(index, static_cast<unsigned int>(item));
     return this;
+  }
+
+  Sequence<Bit>* Slice(int index, int count, const Sequence<Bit>* replacement = nullptr) override {
+    if (count < 0) {
+      throw InvalidArgument("Ошибка, отрицательное количество индексов, которые нужно удалить");
+    }
+    const int start = NormalizeSliceIndex(index);
+    const int available = length_ - start;
+    const int remove_count = count < available ? count : available;
+    BitSequence rebuilt;
+    for (int i = 0; i < start; ++i) {
+      rebuilt.Append(Get(i));
+    }
+    if (replacement != nullptr) {
+      for (int i = 0; i < replacement->GetLength(); ++i) {
+        rebuilt.Append(replacement->Get(i));
+      }
+    }
+    for (int i = start + remove_count; i < length_; ++i) {
+      rebuilt.Append(Get(i));
+    }
+    *this = rebuilt;
+    return this;
+  }
+
+  Sequence<Bit>* Concat(const Sequence<Bit>& other) override {
+    for (int i = 0; i < other.GetLength(); ++i) {
+      Append(other.Get(i));
+    }
+    return this;
+  }
+
+  Sequence<Bit>* Clone() const override {
+    return new BitSequence(*this);
+  }
+
+  Sequence<Bit>* CreateEmpty() const override {
+    return new BitSequence();
+  }
+
+  const char* StorageName() const override {
+    return "BitSequence";
+  }
+
+  BitSequence* And(const BitSequence& other) const {
+    ValidateEqualLength(other);
+    BitSequence* result = new BitSequence(*this);
+    for (int i = 0; i < WordCount(); ++i) {
+      result->words_.Set(i, words_.Get(i) & other.words_.Get(i));
+    }
+    result->ClearTailBits();
+    return result;
+  }
+
+  BitSequence* Or(const BitSequence& other) const {
+    ValidateEqualLength(other);
+    BitSequence* result = new BitSequence(*this);
+    for (int i = 0; i < WordCount(); ++i) {
+      result->words_.Set(i, words_.Get(i) | other.words_.Get(i));
+    }
+    result->ClearTailBits();
+    return result;
+  }
+
+  BitSequence* Xor(const BitSequence& other) const {
+    ValidateEqualLength(other);
+    BitSequence* result = new BitSequence(*this);
+    for (int i = 0; i < WordCount(); ++i) {
+      result->words_.Set(i, words_.Get(i) ^ other.words_.Get(i));
+    }
+    result->ClearTailBits();
+    return result;
+  }
+
+  BitSequence* Not() const {
+    BitSequence* result = new BitSequence(*this);
+    for (int i = 0; i < WordCount(); ++i) {
+      result->words_.Set(i, ~words_.Get(i));
+    }
+    result->ClearTailBits();
+    return result;
+  }
+
+  std::string ToBitString() const {
+    std::string result;
+    result.reserve(length_);
+    for (int i = 0; i < length_; ++i) {
+      result.push_back(GetBitInternal(i) ? '1' : '0');
+    }
+    return result;
   }
 
  private:
@@ -167,6 +255,23 @@ class BitSequence : public Sequence<Bit> {
     }
   }
 
+  int NormalizeSliceIndex(int index) const {
+    int normalized = index;
+    if (normalized < 0) {
+      normalized = length_ + normalized;
+    }
+    if (normalized < 0 || normalized > length_) {
+      throw IndexOutOfRange("Ошибка, индекс не из диапазона");
+    }
+    return normalized;
+  }
+
+  void ValidateEqualLength(const BitSequence& other) const {
+    if (length_ != other.length_) {
+      throw InvalidArgument("Ошибка, длины не равны");
+    }
+  }
+
   static int WordIndex(int bit_index) {
     return bit_index / 64;
   }
@@ -177,7 +282,7 @@ class BitSequence : public Sequence<Bit> {
     }
     if (allow && index == 0 && length_ == 0) {
       ResizeBits(1);
-      SetBitInternal(0, static_cast<bool>(item));
+      SetBitInternal(0, static_cast<unsigned int>(item));
       return this;
     }
     if (index < 0 || index > length_ || (!allow && index == length_)) {
@@ -188,7 +293,7 @@ class BitSequence : public Sequence<Bit> {
     for (int i = old_length; i > index; --i) {
       SetBitInternal(i, GetBitInternal(i - 1));
     }
-    SetBitInternal(index, static_cast<bool>(item));
+    SetBitInternal(index, static_cast<unsigned int>(item));
     return this;
   }
 
