@@ -5,8 +5,8 @@
 #include <utility>
 #include <vector>
 
-#include "lab2/ienumerator.hpp"
-#include "lab2/option.hpp"
+#include "ienumerator.hpp"
+#include "option.hpp"
 
 namespace lab2 {
 
@@ -43,7 +43,12 @@ class Sequence : public ICollection<T> {
   virtual Sequence<T>* InsertAt(const T& item, int index) = 0;
   virtual Sequence<T>* Concat(const Sequence<T>& other) = 0;
 
+  virtual Sequence<T>* Set(int index, const T& item) = 0;
+  virtual Sequence<T>* Slice(int index, int count, const Sequence<T>* replacement = nullptr) = 0;
+
+  virtual Sequence<T>* Clone() const = 0;
   virtual Sequence<T>* CreateEmpty() const = 0;
+  virtual const char* StorageName() const = 0;
 
   Option<T> TryFirst(const std::function<bool(const T&)>& pred = nullptr) const {
     if (GetLength() == 0) {

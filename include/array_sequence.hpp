@@ -249,3 +249,4 @@ class ImmutableArraySequence : public ArraySequence<T> {
   }
 };
 
+}

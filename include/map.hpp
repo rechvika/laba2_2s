@@ -70,7 +70,7 @@ std::pair<Sequence<T1>*, Sequence<T2>*> Unzip(const Sequence<std::pair<T1, T2>>&
 template <class T>
 Sequence<T>* Range(T start, T stop, T step = static_cast<T>(1)) {
   if (step == static_cast<T>(0)) {
-    throw InvalidArgument("Range: zero step");
+    throw InvalidArgument("Ошибка, шаг равен 0");
   }
   std::unique_ptr<Sequence<T>> result(new MutableArraySequence<T>());
   if (step > static_cast<T>(0)) {
