@@ -193,3 +193,136 @@ void OnWhere() {
         UpdateStatus("Ошибка: " + std::string(e.what()));
     }
 }
+
+void OnReduce() {
+    std::stringstream ss;
+    try {
+        switch (g_selected_type) {
+            case 0: {
+                std::function<int(const int&, const int&)> reducer = 
+                    [](const int& acc, const int& x) { return acc + x; };
+                int sum = g_array_seq->Reduce(0, reducer);
+                ss << "Сумма = " << sum;
+                break;
+            }
+            case 1: {
+                std::function<int(const int&, const int&)> reducer = 
+                    [](const int& acc, const int& x) { return acc + x; };
+                int sum = g_list_seq->Reduce(0, reducer);
+                ss << "Сумма = " << sum;
+                break;
+            }
+            case 2: {
+                int ones = 0;
+                for (int i = 0; i < g_bit_seq->GetLength(); ++i) {
+                    if (g_bit_seq->Get(i).Value()) ones++;
+                }
+                ss << "Единиц = " << ones;
+                break;
+            }
+        }
+        UpdateStatus(ss.str());
+    } catch (const std::exception& e) {
+        UpdateStatus("Ошибка: " + std::string(e.what()));
+    }
+}
+
+void OnClear() {
+    switch (g_selected_type) {
+        case 0:
+            g_array_seq = std::make_unique<MutableArraySequence<int>>();
+            for (int i = 1; i <= 5; ++i) g_array_seq->Append(i);
+            break;
+        case 1:
+            g_list_seq = std::make_unique<MutableListSequence<int>>();
+            for (int i = 1; i <= 5; ++i) g_list_seq->Append(i * 10);
+            break;
+        case 2:
+            g_bit_seq = std::make_unique<BitSequence>();
+            g_bit_seq->Append(Bit(1));
+            g_bit_seq->Append(Bit(0));
+            g_bit_seq->Append(Bit(1));
+            g_bit_seq->Append(Bit(1));
+            g_bit_seq->Append(Bit(0));
+            break;
+    }
+    UpdateStatus("Последовательность сброшена в начальное состояние");
+}
+
+void InitData() {
+    g_array_seq = std::make_unique<MutableArraySequence<int>>();
+    g_list_seq = std::make_unique<MutableListSequence<int>>();
+    g_bit_seq = std::make_unique<BitSequence>();
+    
+    for (int i = 1; i <= 5; ++i) {
+        g_array_seq->Append(i);
+        g_list_seq->Append(i * 10);
+    }
+    g_bit_seq->Append(Bit(1));
+    g_bit_seq->Append(Bit(0));
+    g_bit_seq->Append(Bit(1));
+    g_bit_seq->Append(Bit(1));
+    g_bit_seq->Append(Bit(0));
+}
+int main() {
+    InitData();
+    
+    auto screen = ScreenInteractive::TerminalOutput();
+
+    std::vector<std::string> type_labels = {"ArraySequence", "ListSequence", "BitSequence"};
+    int type_selected = 0;
+    
+    auto type_selector = Radiobox(&type_labels, &type_selected);
+
+    auto input_value = Input(&g_value_str, "Значение");
+    auto input_index = Input(&g_index_str, "Индекс (1..N)");
+
+    auto info_panel = Renderer([&] {
+        g_selected_type = type_selected;
+        return window(
+            text("Информация") | bold | center,
+            vbox({
+                text("Тип: " + GetTypeName()) | color(Color::Cyan),
+                text("Размер: " + std::to_string(GetLength())) | color(Color::Cyan),
+                text("Содержимое: " + GetContents()) | color(Color::Cyan),
+                separator(),
+                text("Статус: " + g_status) | color(g_status.find("Ошибка") != std::string::npos ? Color::Red : Color::Yellow),
+            })
+        );
+    });
+
+    auto btn_append = Button("Append", OnAppend);
+    auto btn_prepend = Button("Prepend", OnPrepend);
+    auto btn_insert = Button("InsertAt", OnInsert);
+    auto btn_map = Button("Map (x²/NOT)", OnMap);
+    auto btn_where = Button("Where (even/1)", OnWhere);
+    auto btn_reduce = Button("Reduce (sum)", OnReduce);
+    auto btn_clear = Button("Reset", OnClear);
+    auto btn_exit = Button("Exit", screen.ExitLoopClosure());
+    
+    auto buttons_row1 = Container::Horizontal({btn_append, btn_prepend, btn_insert});
+    auto buttons_row2 = Container::Horizontal({btn_map, btn_where, btn_reduce});
+    auto buttons_row3 = Container::Horizontal({btn_clear, btn_exit});
+    auto buttons = Container::Vertical({buttons_row1, buttons_row2, buttons_row3});
+
+    auto layout = Container::Vertical({
+        type_selector,
+        input_value,
+        input_index,
+        info_panel,
+        buttons,
+    });
+
+    auto component = Renderer(layout, [&] {
+        return vbox({
+            text("=== УПРАВЛЕНИЕ ПОСЛЕДОВАТЕЛЬНОСТЯМИ ===") | bold | center | color(Color::Green),
+            separator(),
+            text("Тип последовательности:") | bold,
+            layout->Render(),
+        }) | border;
+    });
+    
+    screen.Loop(component);
+    
+    return 0;
+}
