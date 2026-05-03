@@ -4,7 +4,7 @@
 #include <cstddef>
 #include <memory>
 
-#include "exceptions.hpp"
+#include "exception.hpp"
 #include "icollection.hpp"
 
 namespace lab2 {

@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "array_sequence.hpp"
-#include "dynamic_array.hpp"
+#include "dinamic_array.hpp"
 
 namespace lab2 {
 

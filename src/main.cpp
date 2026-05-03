@@ -100,3 +100,96 @@ void OnAppend() {
         UpdateStatus("Ошибка: " + std::string(e.what()));
     }
 }
+
+void OnPrepend() {
+    try {
+        int val = GetValue();
+        switch (g_selected_type) {
+            case 0: g_array_seq->Prepend(val); break;
+            case 1: g_list_seq->Prepend(val); break;
+            case 2: g_bit_seq->Prepend(Bit(val != 0)); break;
+        }
+        UpdateStatus("Добавлен в начало: " + std::to_string(val));
+    } catch (const std::exception& e) {
+        UpdateStatus("Ошибка: " + std::string(e.what()));
+    }
+}
+
+void OnInsert() {
+    try {
+        int val = GetValue();
+        int idx = GetIndex();
+        if (idx < 0 || idx > GetLength()) {
+            UpdateStatus("Ошибка: индекс вне диапазона");
+            return;
+        }
+        
+        switch (g_selected_type) {
+            case 0: g_array_seq->InsertAt(val, idx); break;
+            case 1: g_list_seq->InsertAt(val, idx); break;
+            case 2: g_bit_seq->InsertAt(Bit(val != 0), idx); break;
+        }
+        UpdateStatus("Вставлен на позицию " + std::to_string(idx + 1) + ": " + std::to_string(val));
+    } catch (const std::exception& e) {
+        UpdateStatus("Ошибка: " + std::string(e.what()));
+    }
+}
+
+void OnMap() {
+    try {
+        switch (g_selected_type) {
+            case 0: {
+                std::function<int(const int&)> mapper = [](const int& x) { return x * x; };
+                Sequence<int>* mapped = Map(*g_array_seq, mapper);
+                g_array_seq.reset(dynamic_cast<MutableArraySequence<int>*>(mapped));
+                UpdateStatus("Применено отображение: x -> x²");
+                break;
+            }
+            case 1: {
+                std::function<int(const int&)> mapper = [](const int& x) { return x * x; };
+                Sequence<int>* mapped = Map(*g_list_seq, mapper);
+                g_list_seq.reset(dynamic_cast<MutableListSequence<int>*>(mapped));
+                UpdateStatus("Применено отображение: x -> x²");
+                break;
+            }
+            case 2: {
+                auto new_seq = std::make_unique<BitSequence>();
+                for (int i = 0; i < g_bit_seq->GetLength(); ++i) {
+                    new_seq->Append(~g_bit_seq->Get(i));
+                }
+                g_bit_seq = std::move(new_seq);
+                UpdateStatus("Применено отображение: NOT");
+                break;
+            }
+        }
+    } catch (const std::exception& e) {
+        UpdateStatus("Ошибка: " + std::string(e.what()));
+    }
+}
+
+void OnWhere() {
+    try {
+        switch (g_selected_type) {
+            case 0: {
+                Sequence<int>* filtered = g_array_seq->Where([](const int& x) { return x % 2 == 0; });
+                g_array_seq.reset(dynamic_cast<MutableArraySequence<int>*>(filtered));
+                UpdateStatus("Отфильтрованы четные числа");
+                break;
+            }
+            case 1: {
+                Sequence<int>* filtered = g_list_seq->Where([](const int& x) { return x % 2 == 0; });
+                g_list_seq.reset(dynamic_cast<MutableListSequence<int>*>(filtered));
+                UpdateStatus("Отфильтрованы четные числа");
+                break;
+            }
+            case 2: {
+                Sequence<Bit>* filtered = g_bit_seq->Where([](const Bit& b) { return b.Value() == 1; });
+                g_bit_seq.reset(dynamic_cast<BitSequence*>(filtered));
+                UpdateStatus("Оставлены только единицы");
+                break;
+            }
+        }
+    } catch (const std::exception& e) {
+        UpdateStatus("Ошибка: " + std::string(e.what()));
+    }
+}

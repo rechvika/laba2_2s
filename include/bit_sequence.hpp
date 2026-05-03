@@ -4,7 +4,7 @@
 #include <string>
 
 #include "bit.hpp"
-#include "dynamic_array.hpp"
+#include "dinamic_array.hpp"
 #include "sequence.hpp"
 
 namespace lab2 {
@@ -15,8 +15,8 @@ class BitSequence : public Sequence<Bit> {
   }
 
   explicit BitSequence(const std::string& bits) : words_(), length_(0) {
-    for (int i = 0; i < bits.length(); i++) {
-      char ch = bits[i]; {
+    for (std::size_t i = 0; i < bits.length(); i++) {
+      char ch = bits[i];
       if (ch != '0' && ch != '1') {
         throw InvalidArgument("Ошибка, элемент не удовлетворяет условиям");
       }
@@ -30,7 +30,7 @@ class BitSequence : public Sequence<Bit> {
     }
     ResizeBits(count);
     for (int i = 0; i < count; ++i) {
-      SetBitInternal(i, static_cast<unsigned int>(items[i]));
+      SetBitInternal(i, items[i].Value() != 0);
     }
   }
 
@@ -60,6 +60,14 @@ class BitSequence : public Sequence<Bit> {
     return length_;
   }
 
+  BitSequence& operator=(const BitSequence& other) {
+    if (this != &other) {
+      words_ = other.words_;
+      length_ = other.length_;
+    }
+    return *this;
+  }
+
   Sequence<Bit>* GetSubsequence(int start_index, int end_index) const override {
     ValidateClosedRange(start_index, end_index);
     BitSequence* result = new BitSequence();
@@ -72,7 +80,7 @@ class BitSequence : public Sequence<Bit> {
 
   Sequence<Bit>* Append(const Bit& item) override {
     ResizeBits(length_ + 1);
-    SetBitInternal(length_ - 1, static_cast<unsigned int>(item));
+    SetBitInternal(length_ - 1, item.Value() != 0);
     return this;
   }
 
@@ -89,7 +97,7 @@ class BitSequence : public Sequence<Bit> {
 
   Sequence<Bit>* Set(int index, const Bit& item) override {
     ValidateIndex(index);
-    SetBitInternal(index, static_cast<unsigned int>(item));
+    SetBitInternal(index, item.Value() != 0);
     return this;
   }
 
@@ -281,7 +289,7 @@ class BitSequence : public Sequence<Bit> {
     }
     if (allow && index == 0 && length_ == 0) {
       ResizeBits(1);
-      SetBitInternal(0, static_cast<unsigned int>(item));
+      SetBitInternal(0, item.Value() != 0);
       return this;
     }
     if (index < 0 || index > length_ || (!allow && index == length_)) {
@@ -292,10 +300,9 @@ class BitSequence : public Sequence<Bit> {
     for (int i = old_length; i > index; --i) {
       SetBitInternal(i, GetBitInternal(i - 1));
     }
-    SetBitInternal(index, static_cast<unsigned int>(item));
+    SetBitInternal(index, item.Value() != 0);
     return this;
   }
+};
 
-  }
-}
 }

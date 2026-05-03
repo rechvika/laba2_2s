@@ -2,7 +2,7 @@
 
 #include <algorithm>
 
-#include "dynamic_array.hpp"
+#include "dinamic_array.hpp"
 #include "linked_list.hpp"
 #include "sequence.hpp"
 

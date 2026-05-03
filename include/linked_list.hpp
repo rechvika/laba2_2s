@@ -3,7 +3,7 @@
 #include <cstddef>
 #include <utility>
 
-#include "exceptions.hpp"
+#include "exception.hpp"
 #include "icollection.hpp"
 
 namespace lab2 {
@@ -77,6 +77,11 @@ class LinkedList : public ICollection<T> {
       throw IndexOutOfRange("Ошибка, индекс не из диапазона");
     }
     return Get(static_cast<int>(index));
+  }
+  
+  void Set(int index, const T& value) {
+    ValidateIndex(index);
+    NodeAt(index)->value = value;
   }
 
   LinkedList<T>* GetSubList(int start_index, int end_index) const {
