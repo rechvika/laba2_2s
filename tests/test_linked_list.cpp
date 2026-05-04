@@ -91,3 +91,141 @@ TEST(LinkedListGet, InvalidIndex) {
     EXPECT_THROW(list.Get(100), IndexOutOfRange);
     EXPECT_THROW(LinkedList<int>().Get(0), IndexOutOfRange);
 }
+TEST(LinkedListSet, ValidIndex) {
+    int items[] = {1, 2, 3};
+    LinkedList<int> list(items, 3);
+    list.Set(1, 99);
+    EXPECT_EQ(list.Get(1), 99);
+    list.Set(0, 100);
+    EXPECT_EQ(list.Get(0), 100);
+    list.Set(2, 300);
+    EXPECT_EQ(list.Get(2), 300);
+}
+
+TEST(LinkedListSet, InvalidIndex) {
+    LinkedList<int> list;
+    list.Append(1);
+    EXPECT_THROW(list.Set(-1, 10), IndexOutOfRange);
+    EXPECT_THROW(list.Set(1, 10), IndexOutOfRange);
+    EXPECT_THROW(LinkedList<int>().Set(0, 10), IndexOutOfRange);
+}
+
+TEST(LinkedListAppend, Normal) {
+    LinkedList<int> list;
+    list.Append(1);
+    list.Append(2);
+    list.Append(3);
+    EXPECT_EQ(list.GetLength(), 3);
+    EXPECT_EQ(list.Get(0), 1);
+    EXPECT_EQ(list.Get(2), 3);
+}
+
+TEST(LinkedListPrepend, Normal) {
+    LinkedList<int> list;
+    list.Prepend(3);
+    list.Prepend(2);
+    list.Prepend(1);
+    EXPECT_EQ(list.GetLength(), 3);
+    EXPECT_EQ(list.Get(0), 1);
+    EXPECT_EQ(list.Get(2), 3);
+}
+
+TEST(LinkedListInsertAt, Normal) {
+    LinkedList<int> list;
+    list.Append(2);
+    list.Append(3);
+    list.InsertAt(1, 0);
+    EXPECT_EQ(list.Get(0), 1);
+    EXPECT_EQ(list.Get(1), 2);
+    EXPECT_EQ(list.Get(2), 3);
+    
+    list.InsertAt(5, 3);
+    EXPECT_EQ(list.Get(3), 5);
+}
+
+TEST(LinkedListInsertAt, InvalidIndex) {
+    LinkedList<int> list;
+    list.Append(1);
+    EXPECT_THROW(list.InsertAt(5, -1), IndexOutOfRange);
+    EXPECT_THROW(list.InsertAt(5, 2), IndexOutOfRange);
+    EXPECT_THROW(LinkedList<int>().InsertAt(1, 0), IndexOutOfRange);
+}
+
+TEST(LinkedListGetSubList, Normal) {
+    int items[] = {10, 20, 30, 40, 50};
+    LinkedList<int> list(items, 5);
+    LinkedList<int>* sublist = list.GetSubList(1, 3);
+    
+    EXPECT_EQ(sublist->GetLength(), 3);
+    EXPECT_EQ(sublist->Get(0), 20);
+    EXPECT_EQ(sublist->Get(1), 30);
+    EXPECT_EQ(sublist->Get(2), 40);
+    
+    delete sublist;
+}
+
+TEST(LinkedListGetSubList, InvalidRange) {
+    int items[] = {1, 2, 3};
+    LinkedList<int> list(items, 3);
+    EXPECT_THROW(list.GetSubList(2, 1), InvalidArgument);
+    EXPECT_THROW(list.GetSubList(0, 5), IndexOutOfRange);
+    EXPECT_THROW(list.GetSubList(5, 6), IndexOutOfRange);
+    EXPECT_THROW(LinkedList<int>().GetSubList(0, 0), IndexOutOfRange);
+}
+
+TEST(LinkedListConcat, Normal) {
+    int items1[] = {1, 2, 3};
+    int items2[] = {4, 5, 6};
+    LinkedList<int> list1(items1, 3);
+    LinkedList<int> list2(items2, 3);
+    
+    LinkedList<int>* result = list1.Concat(&list2);
+    EXPECT_EQ(result->GetLength(), 6);
+    EXPECT_EQ(result->Get(0), 1);
+    EXPECT_EQ(result->Get(3), 4);
+    EXPECT_EQ(result->Get(5), 6);
+    
+    delete result;
+}
+
+TEST(LinkedListConcat, WithEmpty) {
+    int items[] = {1, 2, 3};
+    LinkedList<int> list1(items, 3);
+    LinkedList<int> list2;
+    
+    LinkedList<int>* result = list1.Concat(&list2);
+    EXPECT_EQ(result->GetLength(), 3);
+    delete result;
+}
+
+TEST(LinkedListConcat, NullOther) {
+    LinkedList<int> list;
+    list.Append(1);
+    EXPECT_THROW(list.Concat(nullptr), InvalidArgument);
+}
+
+TEST(LinkedListDestructor, DoesNotCrash) {
+    LinkedList<int>* list = new LinkedList<int>();
+    delete list;
+    
+    list = new LinkedList<int>();
+    for (int i = 0; i < 100; ++i) list->Append(i);
+    delete list;
+}
+
+TEST(LinkedListICollection, GetCount) {
+    int items[] = {1, 2, 3, 4, 5};
+    LinkedList<int> list(items, 5);
+    EXPECT_EQ(list.GetCount(), 5);
+    EXPECT_EQ(LinkedList<int>().GetCount(), 0);
+}
+
+TEST(LinkedListEdgeCases, StringType) {
+    LinkedList<std::string> list;
+    list.Append("привет");
+    list.Prepend("спанчбоб");
+    list.InsertAt("!", 1);
+    EXPECT_EQ(list.Get(0), "спанчбоб");
+    EXPECT_EQ(list.Get(1), "!");
+    EXPECT_EQ(list.Get(2), "привет");
+}
