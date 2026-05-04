@@ -14,7 +14,7 @@ namespace lab2 {
 template <class T, class U>
 Sequence<U>* Map(const Sequence<T>& sequence, const std::function<U(const T&)>& mapper) {
   std::unique_ptr<Sequence<U>> result(new MutableArraySequence<U>());
-  for (int i = 0; i < sequence.GetLength(); ++i) {
+  for (size_t i = 0; i < sequence.GetLength(); ++i) {
     Sequence<U>* next = result->Append(mapper(sequence.Get(i)));
     detail::TakeResult(result, next);
   }
@@ -22,9 +22,9 @@ Sequence<U>* Map(const Sequence<T>& sequence, const std::function<U(const T&)>& 
 }
 
 template <class T, class U>
-Sequence<U>* MapIndexed(const Sequence<T>& sequence, const std::function<U(const T&, int)>& mapper) {
+Sequence<U>* MapIndexed(const Sequence<T>& sequence, const std::function<U(const T&, size_t)>& mapper) {
   std::unique_ptr<Sequence<U>> result(new MutableArraySequence<U>());
-  for (int i = 0; i < sequence.GetLength(); ++i) {
+  for (size_t i = 0; i < sequence.GetLength(); ++i) {
     Sequence<U>* next = result->Append(mapper(sequence.Get(i), i));
     detail::TakeResult(result, next);
   }
@@ -34,9 +34,9 @@ Sequence<U>* MapIndexed(const Sequence<T>& sequence, const std::function<U(const
 template <class T, class U>
 Sequence<U>* FlatMap(const Sequence<T>& sequence, const std::function<DynamicArray<U>(const T&)>& mapper) {
   std::unique_ptr<Sequence<U>> result(new MutableArraySequence<U>());
-  for (int i = 0; i < sequence.GetLength(); ++i) {
+  for (size_t i = 0; i < sequence.GetLength(); ++i) {
     const DynamicArray<U> values = mapper(sequence.Get(i));
-    for (int j = 0; j < values.GetSize(); ++j) {
+    for (size_t j = 0; j < values.GetSize(); ++j) {
       Sequence<U>* next = result->Append(values.Get(j));
       detail::TakeResult(result, next);
     }
@@ -47,8 +47,8 @@ Sequence<U>* FlatMap(const Sequence<T>& sequence, const std::function<DynamicArr
 template <class T1, class T2>
 Sequence<std::pair<T1, T2>>* Zip(const Sequence<T1>& left, const Sequence<T2>& right) {
   std::unique_ptr<Sequence<std::pair<T1, T2>>> result(new MutableArraySequence<std::pair<T1, T2>>());
-  const int length = left.GetLength() < right.GetLength() ? left.GetLength() : right.GetLength();
-  for (int i = 0; i < length; ++i) {
+  const size_t length = left.GetLength() < right.GetLength() ? left.GetLength() : right.GetLength();
+  for (size_t i = 0; i < length; ++i) {
     auto* next = result->Append(std::make_pair(left.Get(i), right.Get(i)));
     detail::TakeResult(result, next);
   }
@@ -59,7 +59,7 @@ template <class T1, class T2>
 std::pair<Sequence<T1>*, Sequence<T2>*> Unzip(const Sequence<std::pair<T1, T2>>& sequence) {
   std::unique_ptr<Sequence<T1>> first(new MutableArraySequence<T1>());
   std::unique_ptr<Sequence<T2>> second(new MutableArraySequence<T2>());
-  for (int i = 0; i < sequence.GetLength(); ++i) {
+  for (size_t i = 0; i < sequence.GetLength(); ++i) {
     auto value = sequence.Get(i);
     detail::TakeResult(first, first->Append(value.first));
     detail::TakeResult(second, second->Append(value.second));

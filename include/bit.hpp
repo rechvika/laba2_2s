@@ -15,7 +15,7 @@ class Bit {
   Bit(int value) : value_(value != 0) {
   }
 
-  unsigned int Value() const {
+  size_t Value() const {
     return value_;
   }
 
@@ -43,16 +43,16 @@ class Bit {
     return Bit(!value_);
   }
 
-  unsigned int operator==(const Bit& other) const {
+  size_t operator==(const Bit& other) const {
     return value_ == other.value_;
   }
 
-  unsigned int operator!=(const Bit& other) const {
+  size_t operator!=(const Bit& other) const {
     return !(*this == other);
   }
 
  private:
-  unsigned int value_;
+  size_t value_;
 };
 
 }

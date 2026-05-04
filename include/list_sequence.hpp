@@ -13,7 +13,7 @@ class ListSequence : public Sequence<T> {
   ListSequence() : items_() {
   }
 
-  ListSequence(const T* items, int count) : items_(items, count) {
+  ListSequence(const T* items, size_t count) : items_(items, count) {
   }
 
   explicit ListSequence(const LinkedList<T>& list) : items_(list) {
@@ -30,18 +30,18 @@ class ListSequence : public Sequence<T> {
     return items_.GetLast();
   }
 
-  T Get(int index) const override {
+  T Get(size_t index) const override {
     return items_.Get(index);
   }
 
-  int GetLength() const override {
+  size_t GetLength() const override {
     return items_.GetLength();
   }
 
-  Sequence<T>* GetSubsequence(int start_index, int end_index) const override {
+  Sequence<T>* GetSubsequence(size_t start_index, size_t end_index) const override {
     ValidateClosedRange(start_index, end_index);
     ListSequence<T>* result = CreateConcreteEmpty();
-    for (int i = start_index; i <= end_index; ++i) {
+    for (size_t i = start_index; i <= end_index; ++i) {
       result->AppendInternal(items_.Get(i));
     }
     return result;
@@ -55,18 +55,18 @@ class ListSequence : public Sequence<T> {
     return PrepareForWrite()->PrependInternal(item);
   }
 
-  Sequence<T>* InsertAt(const T& item, int index) override {
+  Sequence<T>* InsertAt(const T& item, size_t index) override {
     if (index < 0 || index >= GetLength()) {
       throw IndexOutOfRange("Ошибка, индекс не из диапазона");
     }
     return PrepareForWrite()->InsertAtInternal(item, index);
   }
 
-  Sequence<T>* Set(int index, const T& item) override {
+  Sequence<T>* Set(size_t index, const T& item) override {
     return PrepareForWrite()->SetInternal(index, item);
   }
 
-  Sequence<T>* Slice(int index, int count, const Sequence<T>* replacement = nullptr) override {
+  Sequence<T>* Slice(size_t index, size_t count, const Sequence<T>* replacement = nullptr) override {
     return PrepareForWrite()->SliceInternal(index, count, replacement);
   }
 
@@ -90,33 +90,33 @@ class ListSequence : public Sequence<T> {
     return this;
   }
 
-  ListSequence<T>* InsertAtInternal(const T& item, int index) {
+  ListSequence<T>* InsertAtInternal(const T& item, size_t index) {
     items_.InsertAt(item, index);
     return this;
   }
 
-  ListSequence<T>* SetInternal(int index, const T& item) {
+  ListSequence<T>* SetInternal(size_t index, const T& item) {
     items_.Set(index, item);
     return this;
   }
 
-  ListSequence<T>* SliceInternal(int index, int count, const Sequence<T>* replacement) {
+  ListSequence<T>* SliceInternal(size_t index, size_t count, const Sequence<T>* replacement) {
     if (count < 0) {
       throw InvalidArgument("Ошибка, отрицательный размер");
     }
-    const int start = NormalizeSliceIndex(index);
-    const int available = GetLength() - start;
-    const int remove_count = std::min(count, available);
+    const size_t start = NormalizeSliceIndex(index);
+    const size_t available = GetLength() - start;
+    const size_t remove_count = std::min(count, available);
     LinkedList<T> rebuilt;
-    for (int i = 0; i < start; ++i) {
+    for (size_t i = 0; i < start; ++i) {
       rebuilt.Append(items_.Get(i));
     }
     if (replacement != nullptr) {
-      for (int i = 0; i < replacement->GetLength(); ++i) {
+      for (size_t i = 0; i < replacement->GetLength(); ++i) {
         rebuilt.Append(replacement->Get(i));
       }
     }
-    for (int i = start + remove_count; i < GetLength(); ++i) {
+    for (size_t i = start + remove_count; i < GetLength(); ++i) {
       rebuilt.Append(items_.Get(i));
     }
     items_ = rebuilt;
@@ -124,13 +124,13 @@ class ListSequence : public Sequence<T> {
   }
 
   ListSequence<T>* ConcatInternal(const Sequence<T>& other) {
-    for (int i = 0; i < other.GetLength(); ++i) {
+    for (size_t i = 0; i < other.GetLength(); ++i) {
       items_.Append(other.Get(i));
     }
     return this;
   }
 
-  void ValidateClosedRange(int start_index, int end_index) const {
+  void ValidateClosedRange(size_t start_index, size_t end_index) const {
     if (GetLength() == 0) {
       throw EmptyCollection("Ошибка, индекс равено 0");
     }
@@ -142,8 +142,8 @@ class ListSequence : public Sequence<T> {
     }
   }
 
-  int NormalizeSliceIndex(int index) const {
-    int normalized = index;
+  size_t NormalizeSliceIndex(size_t index) const {
+    size_t normalized = index;
     if (normalized < 0) {
       normalized = GetLength() + normalized;
     }
@@ -159,7 +159,7 @@ class MutableListSequence : public ListSequence<T> {
  public:
   MutableListSequence() = default;
 
-  MutableListSequence(const T* items, int count) : ListSequence<T>(items, count) {
+  MutableListSequence(const T* items, size_t count) : ListSequence<T>(items, count) {
   }
 
   explicit MutableListSequence(const LinkedList<T>& list) : ListSequence<T>(list) {
@@ -195,7 +195,7 @@ class ImmutableListSequence : public ListSequence<T> {
  public:
   ImmutableListSequence() = default;
 
-  ImmutableListSequence(const T* items, int count) : ListSequence<T>(items, count) {
+  ImmutableListSequence(const T* items, size_t count) : ListSequence<T>(items, count) {
   }
 
   explicit ImmutableListSequence(const LinkedList<T>& list) : ListSequence<T>(list) {

@@ -14,11 +14,11 @@ class ArraySequence : public Sequence<T> {
   ArraySequence() : items_() {
   }
 
-  ArraySequence(const T* items, int count) : items_(items, count) {
+  ArraySequence(const T* items, size_t count) : items_(items, count) {
   }
 
   explicit ArraySequence(const LinkedList<T>& list) : items_(list.GetLength()) {
-    for (int i = 0; i < list.GetLength(); ++i) {
+    for (size_t i = 0; i < list.GetLength(); ++i) {
       items_.Set(i, list.Get(i));
     }
   }
@@ -40,18 +40,18 @@ class ArraySequence : public Sequence<T> {
     return items_.Get(GetLength() - 1);
   }
 
-  T Get(int index) const override {
+  T Get(size_t index) const override {
     return items_.Get(index);
   }
 
-  int GetLength() const override {
+  size_t GetLength() const override {
     return items_.GetSize();
   }
 
-  Sequence<T>* GetSubsequence(int start_index, int end_index) const override {
+  Sequence<T>* GetSubsequence(size_t start_index, size_t end_index) const override {
     ValidateClosedRange(start_index, end_index);
     ArraySequence<T>* result = CreateConcreteEmpty();
-    for (int i = start_index; i <= end_index; ++i) {
+    for (size_t i = start_index; i <= end_index; ++i) {
       result->AppendInternal(items_.Get(i));
     }
     return result;
@@ -65,18 +65,18 @@ class ArraySequence : public Sequence<T> {
     return PrepareForWrite()->PrependInternal(item);
   }
 
-  Sequence<T>* InsertAt(const T& item, int index) override {
+  Sequence<T>* InsertAt(const T& item, size_t index) override {
     if (index < 0 || index >= GetLength()) {
       throw IndexOutOfRange("Ошибка, индекс не из диапазона");
     }
     return PrepareForWrite()->InsertAtInternal(item, index);
   }
 
-  Sequence<T>* Set(int index, const T& item) override {
+  Sequence<T>* Set(size_t index, const T& item) override {
     return PrepareForWrite()->SetInternal(index, item);
   }
 
-  Sequence<T>* Slice(int index, int count, const Sequence<T>* replacement = nullptr) override {
+  Sequence<T>* Slice(size_t index, size_t count, const Sequence<T>* replacement = nullptr) override {
     return PrepareForWrite()->SliceInternal(index, count, replacement);
   }
 
@@ -98,46 +98,46 @@ class ArraySequence : public Sequence<T> {
 
   ArraySequence<T>* PrependInternal(const T& item) {
     items_.Resize(items_.GetSize() + 1);
-    for (int i = items_.GetSize() - 1; i > 0; --i) {
+    for (size_t i = items_.GetSize() - 1; i > 0; --i) {
       items_.Set(i, items_.Get(i - 1));
     }
     items_.Set(0, item);
     return this;
   }
 
-  ArraySequence<T>* InsertAtInternal(const T& item, int index) {
+  ArraySequence<T>* InsertAtInternal(const T& item, size_t index) {
     items_.Resize(items_.GetSize() + 1);
-    for (int i = items_.GetSize() - 1; i > index; --i) {
+    for (size_t i = items_.GetSize() - 1; i > index; --i) {
       items_.Set(i, items_.Get(i - 1));
     }
     items_.Set(index, item);
     return this;
   }
 
-  ArraySequence<T>* SetInternal(int index, const T& item) {
+  ArraySequence<T>* SetInternal(size_t index, const T& item) {
     items_.Set(index, item);
     return this;
   }
 
-  ArraySequence<T>* SliceInternal(int index, int count, const Sequence<T>* replacement) {
+  ArraySequence<T>* SliceInternal(size_t index, size_t count, const Sequence<T>* replacement) {
     if (count < 0) {
       throw InvalidArgument("Ошибка, отрицательный размер");
     }
-    const int start = NormalizeSliceIndex(index);
-    const int available = GetLength() - start;
-    const int remove_count = std::min(count, available);
-    const int replacement_length = (replacement == nullptr ? 0 : replacement->GetLength());
+    const size_t start = NormalizeSliceIndex(index);
+    const size_t available = GetLength() - start;
+    const size_t remove_count = std::min(count, available);
+    const size_t replacement_length = (replacement == nullptr ? 0 : replacement->GetLength());
     DynamicArray<T> rebuilt(GetLength() - remove_count + replacement_length);
-    int out = 0;
-    for (int i = 0; i < start; ++i) {
+    size_t out = 0;
+    for (size_t i = 0; i < start; ++i) {
       rebuilt.Set(out++, items_.Get(i));
     }
     if (replacement != nullptr) {
-      for (int i = 0; i < replacement->GetLength(); ++i) {
+      for (size_t i = 0; i < replacement->GetLength(); ++i) {
         rebuilt.Set(out++, replacement->Get(i));
       }
     }
-    for (int i = start + remove_count; i < GetLength(); ++i) {
+    for (size_t i = start + remove_count; i < GetLength(); ++i) {
       rebuilt.Set(out++, items_.Get(i));
     }
     items_ = rebuilt;
@@ -145,15 +145,15 @@ class ArraySequence : public Sequence<T> {
   }
 
   ArraySequence<T>* ConcatInternal(const Sequence<T>& other) {
-    const int old_length = GetLength();
+    const size_t old_length = GetLength();
     items_.Resize(old_length + other.GetLength());
-    for (int i = 0; i < other.GetLength(); ++i) {
+    for (size_t i = 0; i < other.GetLength(); ++i) {
       items_.Set(old_length + i, other.Get(i));
     }
     return this;
   }
 
-  void ValidateClosedRange(int start_index, int end_index) const {
+  void ValidateClosedRange(size_t start_index, size_t end_index) const {
     if (GetLength() == 0) {
       throw EmptyCollection("Ошибка, объект пустой");
     }
@@ -165,8 +165,8 @@ class ArraySequence : public Sequence<T> {
     }
   }
 
-  int NormalizeSliceIndex(int index) const {
-    int normalized = index;
+  size_t NormalizeSliceIndex(size_t index) const {
+    size_t normalized = index;
     if (normalized < 0) {
       normalized = GetLength() + normalized;
     }
@@ -182,7 +182,7 @@ class MutableArraySequence : public ArraySequence<T> {
  public:
   MutableArraySequence() = default;
 
-  MutableArraySequence(const T* items, int count) : ArraySequence<T>(items, count) {
+  MutableArraySequence(const T* items, size_t count) : ArraySequence<T>(items, count) {
   }
 
   explicit MutableArraySequence(const LinkedList<T>& list) : ArraySequence<T>(list) {
@@ -218,7 +218,7 @@ class ImmutableArraySequence : public ArraySequence<T> {
  public:
   ImmutableArraySequence() = default;
 
-  ImmutableArraySequence(const T* items, int count) : ArraySequence<T>(items, count) {
+  ImmutableArraySequence(const T* items, size_t count) : ArraySequence<T>(items, count) {
   }
 
   explicit ImmutableArraySequence(const LinkedList<T>& list) : ArraySequence<T>(list) {

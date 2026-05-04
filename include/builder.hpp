@@ -14,16 +14,16 @@ class Builder {
   }
 
   Builder& AddRange(const LinkedList<T>& values) {
-    for (int i = 0; i < values.GetLength(); ++i) {
+    for (size_t i = 0; i < values.GetLength(); ++i) {
       items_.Append(values.Get(i));
     }
     return *this;
   }
 
   MutableArraySequence<T>* BuildMutableArray() const {
-    const int size = items_.GetLength();
+    const size_t size = items_.GetLength();
     T* data = new T[size];
-    for (int i = 0; i < size; ++i) {
+    for (size_t i = 0; i < size; ++i) {
       data[i] = items_.Get(i);
     }
     MutableArraySequence<T>* result = new MutableArraySequence<T>(data, size);
@@ -32,9 +32,9 @@ class Builder {
   }
 
   ImmutableArraySequence<T>* BuildImmutableArray() const {
-    const int size = items_.GetLength();
+    const size_t size = items_.GetLength();
     T* data = new T[size];
-    for (int i = 0; i < size; ++i) {
+    for (size_t i = 0; i < size; ++i) {
       data[i] = items_.Get(i);
     }
     ImmutableArraySequence<T>* result = new ImmutableArraySequence<T>(data, size);
@@ -43,9 +43,9 @@ class Builder {
   }
 
   MutableListSequence<T>* BuildMutableList() const {
-    const int size = items_.GetLength();
+    const size_t size = items_.GetLength();
     T* data = new T[size];
-    for (int i = 0; i < size; ++i) {
+    for (size_t i = 0; i < size; ++i) {
       data[i] = items_.Get(i);
     }
     MutableListSequence<T>* result = new MutableListSequence<T>(data, size);
@@ -54,9 +54,9 @@ class Builder {
   }
 
   ImmutableListSequence<T>* BuildImmutableList() const {
-    const int size = items_.GetLength();
+    const size_t size = items_.GetLength();
     T* data = new T[size];
-    for (int i = 0; i < size; ++i) {
+    for (size_t i = 0; i < size; ++i) {
       data[i] = items_.Get(i);
     }
     ImmutableListSequence<T>* result = new ImmutableListSequence<T>(data, size);

@@ -15,22 +15,22 @@
 using namespace lab2;
 using namespace ftxui;
 
-std::unique_ptr<MutableArraySequence<int>> g_array_seq;
-std::unique_ptr<MutableListSequence<int>> g_list_seq;
+std::unique_ptr<MutableArraySequence<size_t>> g_array_seq;
+std::unique_ptr<MutableListSequence<size_t>> g_list_seq;
 std::unique_ptr<BitSequence> g_bit_seq;
 
-int g_selected_type = 0;
+size_t g_selected_type = 0;
 std::string g_value_str = "0";
 std::string g_index_str = "1";
 std::string g_status = "Готов";
-int g_selected_button = 0;
+size_t g_selected_button = 0;
 
-int GetValue() {
+size_t GetValue() {
     if (g_value_str.empty()) return 0;
     return std::stoi(g_value_str);
 }
 
-int GetIndex() {
+size_t GetIndex() {
     if (g_index_str.empty()) return 0;
     return std::stoi(g_index_str) - 1;
 }
@@ -43,7 +43,7 @@ std::string GetTypeName() {
     }
 }
 
-int GetLength() {
+size_t GetLength() {
     switch (g_selected_type) {
         case 0: return g_array_seq->GetLength();
         case 1: return g_list_seq->GetLength();
@@ -53,26 +53,26 @@ int GetLength() {
 
 std::string GetContents() {
     std::string result;
-    int len = GetLength();
-    int max_show = 20;
+    size_t len = GetLength();
+    size_t max_show = 20;
     
     if (len == 0) return "пусто";
     
     switch (g_selected_type) {
         case 0:
-            for (int i = 0; i < len && i < max_show; ++i) {
+            for (size_t i = 0; i < len && i < max_show; ++i) {
                 if (i > 0) result += ", ";
                 result += std::to_string(g_array_seq->Get(i));
             }
             break;
         case 1:
-            for (int i = 0; i < len && i < max_show; ++i) {
+            for (size_t i = 0; i < len && i < max_show; ++i) {
                 if (i > 0) result += ", ";
                 result += std::to_string(g_list_seq->Get(i));
             }
             break;
         case 2:
-            for (int i = 0; i < len && i < max_show; ++i) {
+            for (size_t i = 0; i < len && i < max_show; ++i) {
                 if (i > 0) result += ", ";
                 result += g_bit_seq->Get(i).ToChar();
             }
@@ -89,7 +89,7 @@ void UpdateStatus(const std::string& msg) {
 
 void OnAppend() {
     try {
-        int val = GetValue();
+        size_t val = GetValue();
         switch (g_selected_type) {
             case 0: g_array_seq->Append(val); break;
             case 1: g_list_seq->Append(val); break;
@@ -103,7 +103,7 @@ void OnAppend() {
 
 void OnPrepend() {
     try {
-        int val = GetValue();
+        size_t val = GetValue();
         switch (g_selected_type) {
             case 0: g_array_seq->Prepend(val); break;
             case 1: g_list_seq->Prepend(val); break;
@@ -117,8 +117,8 @@ void OnPrepend() {
 
 void OnInsert() {
     try {
-        int val = GetValue();
-        int idx = GetIndex();
+        size_t val = GetValue();
+        size_t idx = GetIndex();
         if (idx < 0 || idx > GetLength()) {
             UpdateStatus("Ошибка: индекс вне диапазона");
             return;
@@ -139,22 +139,22 @@ void OnMap() {
     try {
         switch (g_selected_type) {
             case 0: {
-                std::function<int(const int&)> mapper = [](const int& x) { return x * x; };
-                Sequence<int>* mapped = Map(*g_array_seq, mapper);
-                g_array_seq.reset(dynamic_cast<MutableArraySequence<int>*>(mapped));
+                std::function<size_t(const size_t&)> mapper = [](const size_t& x) { return x * x; };
+                Sequence<size_t>* mapped = Map(*g_array_seq, mapper);
+                g_array_seq.reset(dynamic_cast<MutableArraySequence<size_t>*>(mapped));
                 UpdateStatus("Применено отображение: x -> x²");
                 break;
             }
             case 1: {
-                std::function<int(const int&)> mapper = [](const int& x) { return x * x; };
-                Sequence<int>* mapped = Map(*g_list_seq, mapper);
-                g_list_seq.reset(dynamic_cast<MutableListSequence<int>*>(mapped));
+                std::function<size_t(const size_t&)> mapper = [](const size_t& x) { return x * x; };
+                Sequence<size_t>* mapped = Map(*g_list_seq, mapper);
+                g_list_seq.reset(dynamic_cast<MutableListSequence<size_t>*>(mapped));
                 UpdateStatus("Применено отображение: x -> x²");
                 break;
             }
             case 2: {
                 auto new_seq = std::make_unique<BitSequence>();
-                for (int i = 0; i < g_bit_seq->GetLength(); ++i) {
+                for (size_t i = 0; i < g_bit_seq->GetLength(); ++i) {
                     new_seq->Append(~g_bit_seq->Get(i));
                 }
                 g_bit_seq = std::move(new_seq);
@@ -171,14 +171,14 @@ void OnWhere() {
     try {
         switch (g_selected_type) {
             case 0: {
-                Sequence<int>* filtered = g_array_seq->Where([](const int& x) { return x % 2 == 0; });
-                g_array_seq.reset(dynamic_cast<MutableArraySequence<int>*>(filtered));
+                Sequence<size_t>* filtered = g_array_seq->Where([](const size_t& x) { return x % 2 == 0; });
+                g_array_seq.reset(dynamic_cast<MutableArraySequence<size_t>*>(filtered));
                 UpdateStatus("Отфильтрованы четные числа");
                 break;
             }
             case 1: {
-                Sequence<int>* filtered = g_list_seq->Where([](const int& x) { return x % 2 == 0; });
-                g_list_seq.reset(dynamic_cast<MutableListSequence<int>*>(filtered));
+                Sequence<size_t>* filtered = g_list_seq->Where([](const size_t& x) { return x % 2 == 0; });
+                g_list_seq.reset(dynamic_cast<MutableListSequence<size_t>*>(filtered));
                 UpdateStatus("Отфильтрованы четные числа");
                 break;
             }
@@ -199,22 +199,22 @@ void OnReduce() {
     try {
         switch (g_selected_type) {
             case 0: {
-                std::function<int(const int&, const int&)> reducer = 
-                    [](const int& acc, const int& x) { return acc + x; };
-                int sum = g_array_seq->Reduce(0, reducer);
+                std::function<size_t(const size_t&, const size_t&)> reducer = 
+                    [](const size_t& acc, const size_t& x) { return acc + x; };
+                size_t sum = g_array_seq->Reduce(0, reducer);
                 ss << "Сумма = " << sum;
                 break;
             }
             case 1: {
-                std::function<int(const int&, const int&)> reducer = 
-                    [](const int& acc, const int& x) { return acc + x; };
-                int sum = g_list_seq->Reduce(0, reducer);
+                std::function<size_t(const size_t&, const size_t&)> reducer = 
+                    [](const size_t& acc, const size_t& x) { return acc + x; };
+                size_t sum = g_list_seq->Reduce(0, reducer);
                 ss << "Сумма = " << sum;
                 break;
             }
             case 2: {
-                int ones = 0;
-                for (int i = 0; i < g_bit_seq->GetLength(); ++i) {
+                size_t ones = 0;
+                for (size_t i = 0; i < g_bit_seq->GetLength(); ++i) {
                     if (g_bit_seq->Get(i).Value()) ones++;
                 }
                 ss << "Единиц = " << ones;
@@ -230,12 +230,12 @@ void OnReduce() {
 void OnClear() {
     switch (g_selected_type) {
         case 0:
-            g_array_seq = std::make_unique<MutableArraySequence<int>>();
-            for (int i = 1; i <= 5; ++i) g_array_seq->Append(i);
+            g_array_seq = std::make_unique<MutableArraySequence<size_t>>();
+            for (size_t i = 1; i <= 5; ++i) g_array_seq->Append(i);
             break;
         case 1:
-            g_list_seq = std::make_unique<MutableListSequence<int>>();
-            for (int i = 1; i <= 5; ++i) g_list_seq->Append(i * 10);
+            g_list_seq = std::make_unique<MutableListSequence<size_t>>();
+            for (size_t i = 1; i <= 5; ++i) g_list_seq->Append(i * 10);
             break;
         case 2:
             g_bit_seq = std::make_unique<BitSequence>();
@@ -250,11 +250,11 @@ void OnClear() {
 }
 
 void InitData() {
-    g_array_seq = std::make_unique<MutableArraySequence<int>>();
-    g_list_seq = std::make_unique<MutableListSequence<int>>();
+    g_array_seq = std::make_unique<MutableArraySequence<size_t>>();
+    g_list_seq = std::make_unique<MutableListSequence<size_t>>();
     g_bit_seq = std::make_unique<BitSequence>();
     
-    for (int i = 1; i <= 5; ++i) {
+    for (size_t i = 1; i <= 5; ++i) {
         g_array_seq->Append(i);
         g_list_seq->Append(i * 10);
     }
@@ -270,7 +270,7 @@ int main() {
     auto screen = ScreenInteractive::TerminalOutput();
 
     std::vector<std::string> type_labels = {"ArraySequence", "ListSequence", "BitSequence"};
-    int type_selected = 0;
+    size_t type_selected = 0;
     
     auto type_selector = Radiobox(&type_labels, &type_selected);
 

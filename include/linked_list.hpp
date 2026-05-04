@@ -23,11 +23,11 @@ class LinkedList : public ICollection<T> {
   LinkedList() : head_(nullptr), tail_(nullptr), length_(0) {
   }
 
-  LinkedList(const T* items, int count) : LinkedList() {
+  LinkedList(const T* items, size_t count) : LinkedList() {
     if (count < 0) {
-      throw InvalidArgument("LinkedList: negative count");
+      throw InvalidArgument("Ошибка, размер меньше 0");
     }
-    for (int i = 0; i < count; ++i) {
+    for (size_t i = 0; i < count; ++i) {
       Append(items[i]);
     }
   }
@@ -67,33 +67,33 @@ class LinkedList : public ICollection<T> {
     return tail_->value;
   }
 
-  T Get(int index) const {
+  T Get(size_t index) const {
     ValidateIndex(index);
     return NodeAt(index)->value;
   }
 
   T Get(std::size_t index) const override {
-    if (index > static_cast<std::size_t>(static_cast<int>(index))) {
+    if (index > static_cast<std::size_t>(static_cast<size_t>(index))) {
       throw IndexOutOfRange("Ошибка, индекс не из диапазона");
     }
-    return Get(static_cast<int>(index));
+    return Get(static_cast<size_t>(index));
   }
   
-  void Set(int index, const T& value) {
+  void Set(size_t index, const T& value) {
     ValidateIndex(index);
     NodeAt(index)->value = value;
   }
 
-  LinkedList<T>* GetSubList(int start_index, int end_index) const {
+  LinkedList<T>* GetSubList(size_t start_index, size_t end_index) const {
     ValidateRange(start_index, end_index);
     LinkedList<T>* result = new LinkedList<T>();
-    for (int i = start_index; i <= end_index; ++i) {
+    for (size_t i = start_index; i <= end_index; ++i) {
       result->Append(Get(i));
     }
     return result;
   }
 
-  int GetLength() const {
+  size_t GetLength() const {
     return length_;
   }
 
@@ -123,7 +123,7 @@ class LinkedList : public ICollection<T> {
     ++length_;
   }
 
-  void InsertAt(const T& item, int index) {
+  void InsertAt(const T& item, size_t index) {
     if (index < 0 || index >= length_) {
       throw IndexOutOfRange("Ошибка, индекс не из диапазона");
     }
@@ -157,23 +157,23 @@ class LinkedList : public ICollection<T> {
  private:
   Node* head_;
   Node* tail_;
-  int length_;
+  size_t length_;
 
-  Node* NodeAt(int index) const {
+  Node* NodeAt(size_t index) const {
     Node* node = head_;
-    for (int i = 0; i < index; ++i) {
+    for (size_t i = 0; i < index; ++i) {
       node = node->next;
     }
     return node;
   }
 
-  void ValidateIndex(int index) const {
+  void ValidateIndex(size_t index) const {
     if (index < 0 || index >= length_) {
       throw IndexOutOfRange("Ошибка, индекс не из диапазона");
     }
   }
 
-  void ValidateRange(int start_index, int end_index) const {
+  void ValidateRange(size_t start_index, size_t end_index) const {
     ValidateIndex(start_index);
     ValidateIndex(end_index);
     if (start_index > end_index) {
