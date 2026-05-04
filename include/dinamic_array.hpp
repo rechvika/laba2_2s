@@ -16,16 +16,10 @@ class DynamicArray : public ICollection<T> {
   }
 
   explicit DynamicArray(size_t size) : size_(0), data_(nullptr) {
-    if (size < 0) {
-      throw InvalidArgument("Ошибка, отрицатльный размер");
-    }
     Allocate(size);
   }
 
   DynamicArray(const T* items, size_t count) : size_(0), data_(nullptr) {
-    if (count < 0) {
-      throw InvalidArgument("Ошибка, отрицатльный размер");
-    }
     Allocate(count);
     for (size_t i = 0; i < count; ++i) {
       data_[i] = items[i];
@@ -53,13 +47,6 @@ class DynamicArray : public ICollection<T> {
     return data_[index];
   }
 
-  T Get(std::size_t index) const override {
-    if (index > static_cast<std::size_t>(static_cast<size_t>(index))) {
-      throw IndexOutOfRange("Ошибка, слишком большой индекс");
-    }
-    return Get(static_cast<size_t>(index));
-  }
-
   size_t GetSize() const {
     return size_;
   }
@@ -74,9 +61,7 @@ class DynamicArray : public ICollection<T> {
   }
 
   void Resize(size_t new_size) {
-    if (new_size < 0) {
-      throw InvalidArgument("Ошибка, отрицательный размер");
-    }
+
     std::unique_ptr<T[]> new_data = (new_size == 0 ? nullptr : std::make_unique<T[]>(new_size));
     const size_t copy_count = std::min(size_, new_size);
     for (size_t i = 0; i < copy_count; ++i) {
@@ -112,7 +97,7 @@ class DynamicArray : public ICollection<T> {
   }
 
   void ValidateIndex(size_t index) const {
-    if (index < 0 || index >= size_) {
+    if (index >= size_) {
       throw IndexOutOfRange("Ошибка, индекс не в диапазоне");
     }
   }

@@ -66,7 +66,7 @@ class ArraySequence : public Sequence<T> {
   }
 
   Sequence<T>* InsertAt(const T& item, size_t index) override {
-    if (index < 0 || index >= GetLength()) {
+    if (index >= GetLength()) {
       throw IndexOutOfRange("Ошибка, индекс не из диапазона");
     }
     return PrepareForWrite()->InsertAtInternal(item, index);
@@ -120,9 +120,7 @@ class ArraySequence : public Sequence<T> {
   }
 
   ArraySequence<T>* SliceInternal(size_t index, size_t count, const Sequence<T>* replacement) {
-    if (count < 0) {
-      throw InvalidArgument("Ошибка, отрицательный размер");
-    }
+
     const size_t start = NormalizeSliceIndex(index);
     const size_t available = GetLength() - start;
     const size_t remove_count = std::min(count, available);
@@ -157,7 +155,7 @@ class ArraySequence : public Sequence<T> {
     if (GetLength() == 0) {
       throw EmptyCollection("Ошибка, объект пустой");
     }
-    if (start_index < 0 || end_index < 0 || start_index >= GetLength() || end_index >= GetLength()) {
+    if (start_index >= GetLength() || end_index >= GetLength()) {
       throw IndexOutOfRange("Ошибка, индексы не входят в допустимый диапазон");
     }
     if (start_index > end_index) {
@@ -167,14 +165,16 @@ class ArraySequence : public Sequence<T> {
 
   size_t NormalizeSliceIndex(size_t index) const {
     size_t normalized = index;
-    if (normalized < 0) {
-      normalized = GetLength() + normalized;
-    }
-    if (normalized < 0 || normalized > GetLength()) {
+
+    if (normalized > GetLength()) {
       throw IndexOutOfRange("Ошибка, индекс не из диапазона");
     }
     return normalized;
   }
+
+  #ifdef TESTING_MODE
+    friend class ArraySequenceTestHelper;
+  #endif
 };
 
 template <class T>

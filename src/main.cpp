@@ -119,7 +119,7 @@ void OnInsert() {
     try {
         size_t val = GetValue();
         size_t idx = GetIndex();
-        if (idx < 0 || idx > GetLength()) {
+        if (idx > GetLength()) {
             UpdateStatus("Ошибка: индекс вне диапазона");
             return;
         }
@@ -201,14 +201,14 @@ void OnReduce() {
             case 0: {
                 std::function<size_t(const size_t&, const size_t&)> reducer = 
                     [](const size_t& acc, const size_t& x) { return acc + x; };
-                size_t sum = g_array_seq->Reduce(0, reducer);
+                size_t sum = g_array_seq->Reduce<size_t>(0ULL, reducer);
                 ss << "Сумма = " << sum;
                 break;
             }
             case 1: {
                 std::function<size_t(const size_t&, const size_t&)> reducer = 
                     [](const size_t& acc, const size_t& x) { return acc + x; };
-                size_t sum = g_list_seq->Reduce(0, reducer);
+                ssize_t sum = g_array_seq->Reduce<size_t>(0ULL, reducer);
                 ss << "Сумма = " << sum;
                 break;
             }
@@ -272,7 +272,8 @@ int main() {
     std::vector<std::string> type_labels = {"ArraySequence", "ListSequence", "BitSequence"};
     size_t type_selected = 0;
     
-    auto type_selector = Radiobox(&type_labels, &type_selected);
+    int selected_int = static_cast<int>(type_selected);
+    auto type_selector = Radiobox(&type_labels, &selected_int);
 
     auto input_value = Input(&g_value_str, "Значение");
     auto input_index = Input(&g_index_str, "Индекс (1..N)");

@@ -29,9 +29,6 @@ class Sequence : public ICollection<T> {
   virtual T GetFirst() const = 0;
   virtual T GetLast() const = 0;
   virtual T Get(size_t index) const = 0;
-  T Get(std::size_t index) const override {
-    return Get(static_cast<size_t>(index));
-  }
   virtual size_t GetLength() const = 0;
   std::size_t GetCount() const override {
     return static_cast<std::size_t>(GetLength());

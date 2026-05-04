@@ -25,9 +25,6 @@ class BitSequence : public Sequence<Bit> {
   }
 
   BitSequence(const Bit* items, size_t count) : words_(), length_(0) {
-    if (count < 0) {
-      throw InvalidArgument("Ошибка, отрицательное количество битов");
-    }
     ResizeBits(count);
     for (size_t i = 0; i < count; ++i) {
       SetBitInternal(i, items[i].Value() != 0);
@@ -89,7 +86,7 @@ class BitSequence : public Sequence<Bit> {
   }
 
   Sequence<Bit>* InsertAt(const Bit& item, size_t index) override {
-    if (index < 0 || index >= length_) {
+    if (index >= length_) {
       throw IndexOutOfRange("Ошибка, индекс не из диапазона");
     }
     return InsertAt(item, index, false);
@@ -102,9 +99,7 @@ class BitSequence : public Sequence<Bit> {
   }
 
   Sequence<Bit>* Slice(size_t index, size_t count, const Sequence<Bit>* replacement = nullptr) override {
-    if (count < 0) {
-      throw InvalidArgument("Ошибка, отрицательное количество индексов, которые нужно удалить");
-    }
+
     const size_t start = NormalizeSliceIndex(index);
     const size_t available = length_ - start;
     const size_t remove_count = (count < available) ? count : available;
@@ -204,9 +199,7 @@ class BitSequence : public Sequence<Bit> {
   }
 
   void ResizeBits(size_t new_length) {
-    if (new_length < 0) {
-      throw InvalidArgument("Ошибка, отрицательная длина");
-    }
+
     const size_t old_word_count = WordCount();
     const size_t new_word_count = (new_length + 63) / 64;
     if (new_word_count != old_word_count) {
@@ -245,7 +238,7 @@ class BitSequence : public Sequence<Bit> {
   }
 
   void ValidateIndex(size_t index) const {
-    if (index < 0 || index >= length_) {
+    if (index >= length_) {
       throw IndexOutOfRange("Ошибка, индекс не из диапазона");
     }
   }
@@ -254,7 +247,7 @@ class BitSequence : public Sequence<Bit> {
     if (length_ == 0) {
       throw EmptyCollection("Ошибка, длина равна 0");
     }
-    if (start_index < 0 || end_index < 0 || start_index >= length_ || end_index >= length_) {
+    if (start_index >= length_ || end_index >= length_) {
       throw IndexOutOfRange("Ошибка, индексы не из диапазона");
     }
     if (start_index > end_index) {
@@ -264,10 +257,7 @@ class BitSequence : public Sequence<Bit> {
 
   size_t NormalizeSliceIndex(size_t index) const {
     size_t normalized = index;
-    if (normalized < 0) {
-      normalized = length_ + normalized;
-    }
-    if (normalized < 0 || normalized > length_) {
+    if (normalized > length_) {
       throw IndexOutOfRange("Ошибка, индекс не из диапазона");
     }
     return normalized;
@@ -292,7 +282,7 @@ class BitSequence : public Sequence<Bit> {
       SetBitInternal(0, item.Value() != 0);
       return this;
     }
-    if (index < 0 || index > length_ || (!allow && index == length_)) {
+    if (index > length_ || (!allow && index == length_)) {
       throw IndexOutOfRange("Ошибка, индекс не из диапазона");
     }
     const size_t old_length = length_;

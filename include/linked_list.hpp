@@ -24,9 +24,6 @@ class LinkedList : public ICollection<T> {
   }
 
   LinkedList(const T* items, size_t count) : LinkedList() {
-    if (count < 0) {
-      throw InvalidArgument("Ошибка, размер меньше 0");
-    }
     for (size_t i = 0; i < count; ++i) {
       Append(items[i]);
     }
@@ -70,13 +67,6 @@ class LinkedList : public ICollection<T> {
   T Get(size_t index) const {
     ValidateIndex(index);
     return NodeAt(index)->value;
-  }
-
-  T Get(std::size_t index) const override {
-    if (index > static_cast<std::size_t>(static_cast<size_t>(index))) {
-      throw IndexOutOfRange("Ошибка, индекс не из диапазона");
-    }
-    return Get(static_cast<size_t>(index));
   }
   
   void Set(size_t index, const T& value) {
@@ -124,7 +114,7 @@ class LinkedList : public ICollection<T> {
   }
 
   void InsertAt(const T& item, size_t index) {
-    if (index < 0 || index >= length_) {
+    if (index >= length_) {
       throw IndexOutOfRange("Ошибка, индекс не из диапазона");
     }
     if (index == 0) {
@@ -168,7 +158,7 @@ class LinkedList : public ICollection<T> {
   }
 
   void ValidateIndex(size_t index) const {
-    if (index < 0 || index >= length_) {
+    if (index >= length_) {
       throw IndexOutOfRange("Ошибка, индекс не из диапазона");
     }
   }
