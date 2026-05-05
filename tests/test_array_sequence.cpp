@@ -181,3 +181,53 @@ TEST(MutableArraySequenceStorageName, Name) {
     MutableArraySequence<int> seq;
     EXPECT_STREQ(seq.StorageName(), "MutableArraySequence");
 }
+TEST(ImmutableArraySequenceConstructor, Default) {
+    ImmutableArraySequence<int> seq;
+    EXPECT_EQ(seq.GetLength(), 0);
+}
+
+TEST(ImmutableArraySequenceConstructor, FromArray) {
+    int array[] = {10, 20, 30, 40};
+    ImmutableArraySequence<int> seq(array, 4);
+    EXPECT_EQ(seq.GetLength(), 4);
+}
+
+TEST(ImmutableArraySequenceModification, ReturnsNew) {
+    ImmutableArraySequence<int> seq;
+    Sequence<int>* new_seq = seq.Append(5);
+    EXPECT_NE(new_seq, &seq);
+    EXPECT_EQ(new_seq->GetLength(), 1);
+    delete new_seq;
+}
+
+TEST(ImmutableArraySequenceStorageName, Name) {
+    ImmutableArraySequence<int> seq;
+    EXPECT_STREQ(seq.StorageName(), "ImmutableArraySequence");
+}
+
+TEST(ArraySequencePrivate, ValidateClosedRange) {
+    int array[] = {1, 2, 3, 4, 5};
+    MutableArraySequence<int> seq(array, 5);
+    EXPECT_NO_THROW(ArraySequenceTestHelper::CallValidateClosedRange(&seq, 1, 3));
+    EXPECT_THROW(ArraySequenceTestHelper::CallValidateClosedRange(&seq, 3, 1), InvalidArgument);
+}
+
+TEST(ArraySequencePrivate, NormalizeSliceIndex) {
+    int array[] = {1, 2, 3};
+    MutableArraySequence<int> seq(array, 3);
+    EXPECT_EQ(ArraySequenceTestHelper::CallNormalizeSliceIndex(&seq, 2), 2);
+    EXPECT_THROW(ArraySequenceTestHelper::CallNormalizeSliceIndex(&seq, 10), IndexOutOfRange);
+}
+
+TEST(ArraySequencePrivate, AppendInternal) {
+    MutableArraySequence<int> seq;
+    ArraySequenceTestHelper::CallAppendInternal(&seq, 42);
+    EXPECT_EQ(seq.GetLength(), 1);
+}
+
+TEST(ArraySequencePrivate, PrepareForWrite) {
+    MutableArraySequence<int> mutable_seq;
+    ImmutableArraySequence<int> immutable_seq;
+    EXPECT_EQ(ArraySequenceTestHelper::CallPrepareForWrite(&mutable_seq), &mutable_seq);
+    EXPECT_NE(ArraySequenceTestHelper::CallPrepareForWrite(&immutable_seq), &immutable_seq);
+}
