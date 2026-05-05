@@ -142,3 +142,57 @@ TEST(BitSequenceOr, Normal) {
     EXPECT_EQ(result->ToBitString(), "1110");
     delete result;
 }
+TEST(BitSequenceXor, Normal) {
+    BitSequence seq1("1010"), seq2("1100");
+    BitSequence* result =seq1.Xor(seq2);
+    EXPECT_EQ(result->ToBitString(), "0110");
+    delete result;
+}
+
+TEST(BitSequenceNot, Normal) {
+    BitSequence seq("1010");
+    BitSequence* result = seq.Not();
+    EXPECT_EQ(result->ToBitString(), "0101");
+    delete result;
+}
+
+TEST(BitSequenceToBitString, Normal) {
+    BitSequence seq("10110");
+    EXPECT_EQ(seq.ToBitString(), "10110");
+}
+
+TEST(BitSequenceClone, Normal) {
+    BitSequence seq("101");
+    Sequence<Bit>* cloned = seq.Clone();
+    seq.Set(0, Bit(0));
+    EXPECT_EQ(cloned->Get(0).ToChar(), '1');
+    delete cloned;
+}
+
+TEST(BitSequenceStorageName, Name) {
+    BitSequence seq;
+    EXPECT_STREQ(seq.StorageName(), "BitSequence");
+}
+
+TEST(BitSequencePrivate, WordCount) {
+    BitSequence seq("101");
+    EXPECT_EQ(BitSequenceTestHelper::WordCount(seq), 1);
+    BitSequence seq2(std::string(65, '1'));
+    EXPECT_EQ(BitSequenceTestHelper::WordCount(seq2), 2);
+}
+
+TEST(BitSequencePrivate, GetSetBitInternal) {
+    BitSequence seq("000");
+    BitSequenceTestHelper::SetBitInternal(seq, 0, true);
+    BitSequenceTestHelper::SetBitInternal(seq, 2, true);
+    EXPECT_TRUE(BitSequenceTestHelper::GetBitInternal(seq, 0));
+    EXPECT_FALSE(BitSequenceTestHelper::GetBitInternal(seq, 1));
+    EXPECT_TRUE(BitSequenceTestHelper::GetBitInternal(seq, 2));
+}
+
+TEST(BitSequencePrivate, ResizeBits) {
+    BitSequence seq;
+    BitSequenceTestHelper::ResizeBits(seq, 10);
+    EXPECT_EQ(seq.GetLength(), 10);
+    EXPECT_THROW(BitSequenceTestHelper::ResizeBits(seq, -1), InvalidArgument);
+}
