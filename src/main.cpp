@@ -278,7 +278,7 @@ int main() {
     auto input_index = Input(&g_index_str, "Индекс (1..N)");
 
     auto info_panel = Renderer([&] {
-        g_selected_type = type_selected;
+        g_selected_type = selected_int;
         return window(
             text("Информация") | bold | center,
             vbox({
