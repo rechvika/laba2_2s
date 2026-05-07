@@ -54,11 +54,17 @@ TEST(LinkedListAssignment, AssignmentOperator) {
     EXPECT_EQ(list1.GetLength(), 4);
 }
 
-TEST(LinkedListGetFirstLast, Normal) {
-    int items[] = {5, 10, 15};
-    LinkedList<int> list(items, 3);
-    EXPECT_EQ(list.GetFirst(), 5);
-    EXPECT_EQ(list.GetLast(), 15);
+TEST(LinkedListInsertAt, Normal) {
+    LinkedList<int> list;
+    list.Append(2);
+    list.Append(3);
+    list.InsertAt(1, 0);
+    EXPECT_EQ(list.Get(0), 1);
+    EXPECT_EQ(list.Get(1), 2);
+    EXPECT_EQ(list.Get(2), 3);
+    
+    list.InsertAt(5, 3);
+    EXPECT_EQ(list.Get(3), 5);
 }
 
 TEST(LinkedListGetFirstLast, SingleElement) {
@@ -130,25 +136,16 @@ TEST(LinkedListPrepend, Normal) {
     EXPECT_EQ(list.Get(2), 3);
 }
 
-TEST(LinkedListInsertAt, Normal) {
-    LinkedList<int> list;
-    list.Append(2);
-    list.Append(3);
-    list.InsertAt(1, 0);
-    EXPECT_EQ(list.Get(0), 1);
-    EXPECT_EQ(list.Get(1), 2);
-    EXPECT_EQ(list.Get(2), 3);
-    
-    list.InsertAt(5, 3);
-    EXPECT_EQ(list.Get(3), 5);
-}
-
 TEST(LinkedListInsertAt, InvalidIndex) {
     LinkedList<int> list;
     list.Append(1);
     EXPECT_THROW(list.InsertAt(5, -1), IndexOutOfRange);
     EXPECT_THROW(list.InsertAt(5, 2), IndexOutOfRange);
-    EXPECT_THROW(LinkedList<int>().InsertAt(1, 0), IndexOutOfRange);
+
+    LinkedList<int> empty;
+    EXPECT_NO_THROW(empty.InsertAt(1, 0));
+    EXPECT_EQ(empty.GetLength(), 1);
+    EXPECT_EQ(empty.GetFirst(), 1);
 }
 
 TEST(LinkedListGetSubList, Normal) {

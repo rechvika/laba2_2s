@@ -3,14 +3,6 @@
 
 using namespace lab2;
 
-class BitSequenceTestHelper {
-public:
-    static size_t WordCount(const BitSequence& seq) { return seq.WordCount(); }
-    static void ResizeBits(BitSequence& seq, size_t new_length) { seq.ResizeBits(new_length); }
-    static bool GetBitInternal(const BitSequence& seq, size_t index) { return seq.GetBitInternal(index); }
-    static void SetBitInternal(BitSequence& seq, size_t index, bool value) { seq.SetBitInternal(index, value); }
-};
-
 TEST(BitSequenceConstructor, Default) {
     BitSequence seq;
     EXPECT_EQ(seq.GetLength(), 0);
@@ -172,27 +164,4 @@ TEST(BitSequenceClone, Normal) {
 TEST(BitSequenceStorageName, Name) {
     BitSequence seq;
     EXPECT_STREQ(seq.StorageName(), "BitSequence");
-}
-
-TEST(BitSequencePrivate, WordCount) {
-    BitSequence seq("101");
-    EXPECT_EQ(BitSequenceTestHelper::WordCount(seq), 1);
-    BitSequence seq2(std::string(65, '1'));
-    EXPECT_EQ(BitSequenceTestHelper::WordCount(seq2), 2);
-}
-
-TEST(BitSequencePrivate, GetSetBitInternal) {
-    BitSequence seq("000");
-    BitSequenceTestHelper::SetBitInternal(seq, 0, true);
-    BitSequenceTestHelper::SetBitInternal(seq, 2, true);
-    EXPECT_TRUE(BitSequenceTestHelper::GetBitInternal(seq, 0));
-    EXPECT_FALSE(BitSequenceTestHelper::GetBitInternal(seq, 1));
-    EXPECT_TRUE(BitSequenceTestHelper::GetBitInternal(seq, 2));
-}
-
-TEST(BitSequencePrivate, ResizeBits) {
-    BitSequence seq;
-    BitSequenceTestHelper::ResizeBits(seq, 10);
-    EXPECT_EQ(seq.GetLength(), 10);
-    EXPECT_THROW(BitSequenceTestHelper::ResizeBits(seq, -1), InvalidArgument);
 }

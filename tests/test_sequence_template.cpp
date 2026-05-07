@@ -11,7 +11,7 @@ TEST(SequenceTryFirst, Normal) {
     EXPECT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), 10);
     
-    Option<int> result2 = seq.TryFirst([](const int& x) { return x > 15; });
+    Option<int> result2 = seq.TryFirst(std::function<bool(const int&)>([](const int& x) { return x > 15; }));
     EXPECT_TRUE(result2.HasValue());
     EXPECT_EQ(result2.Value(), 20);
 }
@@ -22,7 +22,7 @@ TEST(SequenceTryFirst, EmptyOrNoMatch) {
     
     int array[] = {1, 2, 3};
     MutableArraySequence<int> seq2(array, 3);
-    EXPECT_FALSE(seq2.TryFirst([](const int& x) { return x > 10; }).HasValue());
+    EXPECT_FALSE(seq2.TryFirst(std::function<bool(const int&)>([](const int& x) { return x > 10; })).HasValue());
 }
 
 TEST(SequenceTryLast, Normal) {
@@ -33,7 +33,7 @@ TEST(SequenceTryLast, Normal) {
     EXPECT_TRUE(result.HasValue());
     EXPECT_EQ(result.Value(), 30);
     
-    Option<int> result2 = seq.TryLast([](const int& x) { return x < 25; });
+    Option<int> result2 = seq.TryLast(std::function<bool(const int&)>([](const int& x) { return x < 25; }));
     EXPECT_TRUE(result2.HasValue());
     EXPECT_EQ(result2.Value(), 20);
 }
@@ -47,16 +47,16 @@ TEST(SequenceReduce, Normal) {
     int array[] = {1, 2, 3, 4};
     MutableArraySequence<int> seq(array, 4);
     
-    int sum = seq.Reduce(0, [](const int& acc, const int& x) { return acc + x; });
+    int sum = seq.Reduce<int>(0, std::function<int(const int&, const int&)>([](const int& acc, const int& x) { return acc + x; }));
     EXPECT_EQ(sum, 10);
     
-    int product = seq.Reduce(1, [](const int& acc, const int& x) { return acc * x; });
+    int product = seq.Reduce<int>(1, std::function<int(const int&, const int&)>([](const int& acc, const int& x) { return acc * x; }));
     EXPECT_EQ(product, 24);
 }
 
 TEST(SequenceReduce, Empty) {
     MutableArraySequence<int> seq;
-    int result = seq.Reduce(42, [](const int& acc, const int& x) { return acc + x; });
+    int result = seq.Reduce<int>(42, std::function<int(const int&, const int&)>([](const int& acc, const int& x) { return acc + x; }));
     EXPECT_EQ(result, 42);
 }
 
@@ -64,13 +64,13 @@ TEST(SequenceWhere, Normal) {
     int array[] = {1, 2, 3, 4, 5, 6};
     MutableArraySequence<int> seq(array, 6);
     
-    Sequence<int>* evens = seq.Where([](const int& x) { return x % 2 == 0; });
+    Sequence<int>* evens = seq.Where(std::function<bool(const int&)>([](const int& x) { return x % 2 == 0; }));
     EXPECT_EQ(evens->GetLength(), 3);
     EXPECT_EQ(evens->Get(0), 2);
     EXPECT_EQ(evens->Get(2), 6);
     delete evens;
     
-    Sequence<int>* empty = seq.Where([](const int& x) { return x > 10; });
+    Sequence<int>* empty = seq.Where(std::function<bool(const int&)>([](const int& x) { return x > 10; }));
     EXPECT_EQ(empty->GetLength(), 0);
     delete empty;
 }

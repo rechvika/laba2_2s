@@ -77,6 +77,9 @@ class ArraySequence : public Sequence<T> {
   }
 
   Sequence<T>* Slice(size_t index, size_t count, const Sequence<T>* replacement = nullptr) override {
+    if (count > GetLength() - index) {
+        throw InvalidArgument("Ошибка, большое количетсво элементов");
+    }
     return PrepareForWrite()->SliceInternal(index, count, replacement);
   }
 
@@ -171,10 +174,6 @@ class ArraySequence : public Sequence<T> {
     }
     return normalized;
   }
-
-  #ifdef TESTING_MODE
-    friend class ArraySequenceTestHelper;
-  #endif
 };
 
 template <class T>

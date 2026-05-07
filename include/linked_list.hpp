@@ -24,6 +24,15 @@ class LinkedList : public ICollection<T> {
   }
 
   LinkedList(const T* items, size_t count) : LinkedList() {
+    if (count == 0) {
+      return;
+    }
+    if (items == nullptr) {
+      throw InvalidArgument("Ошибка, указатель на массив нулевой");
+    }
+    if (count > 1024 * 1024 * 100) {
+      throw InvalidArgument("Ошибка, слишком большой размер");
+    }
     for (size_t i = 0; i < count; ++i) {
       Append(items[i]);
     }
@@ -113,23 +122,24 @@ class LinkedList : public ICollection<T> {
     ++length_;
   }
 
-  void InsertAt(const T& item, size_t index) {
-    if (index >= length_) {
-      throw IndexOutOfRange("Ошибка, индекс не из диапазона");
+void InsertAt(const T& item, size_t index) {
+    if (index > length_) {
+        throw IndexOutOfRange("Ошибка, индекс не из диапазона");
     }
     if (index == 0) {
-      Prepend(item);
-      return;
+        Prepend(item);
+        return;
+    }
+    if (index == length_) {
+        Append(item);
+        return;
     }
     Node* prev = NodeAt(index - 1);
     Node* node = new Node(item);
     node->next = prev->next;
     prev->next = node;
-    if (node->next == nullptr) {
-      tail_ = node;
-    }
     ++length_;
-  }
+}
 
   LinkedList<T>* Concat(const LinkedList<T>* other) const {
     if (other == nullptr) {

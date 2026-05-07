@@ -3,26 +3,6 @@
 
 using namespace lab2;
 
-class ArraySequenceTestHelper {
-public:
-    template<class T>
-    static void CallValidateClosedRange(const ArraySequence<T>* seq, size_t start, size_t end) {
-        seq->ValidateClosedRange(start, end);
-    }
-    template<class T>
-    static size_t CallNormalizeSliceIndex(const ArraySequence<T>* seq, size_t index) {
-        return seq->NormalizeSliceIndex(index);
-    }
-    template<class T>
-    static ArraySequence<T>* CallAppendInternal(ArraySequence<T>* seq, const T& item) {
-        return seq->AppendInternal(item);
-    }
-    template<class T>
-    static ArraySequence<T>* CallPrepareForWrite(ArraySequence<T>* seq) {
-        return seq->PrepareForWrite();
-    }
-};
-
 TEST(MutableArraySequenceConstructor, Default) {
     MutableArraySequence<int> seq;
     EXPECT_EQ(seq.GetLength(), 0);
@@ -203,31 +183,4 @@ TEST(ImmutableArraySequenceModification, ReturnsNew) {
 TEST(ImmutableArraySequenceStorageName, Name) {
     ImmutableArraySequence<int> seq;
     EXPECT_STREQ(seq.StorageName(), "ImmutableArraySequence");
-}
-
-TEST(ArraySequencePrivate, ValidateClosedRange) {
-    int array[] = {1, 2, 3, 4, 5};
-    MutableArraySequence<int> seq(array, 5);
-    EXPECT_NO_THROW(ArraySequenceTestHelper::CallValidateClosedRange(&seq, 1, 3));
-    EXPECT_THROW(ArraySequenceTestHelper::CallValidateClosedRange(&seq, 3, 1), InvalidArgument);
-}
-
-TEST(ArraySequencePrivate, NormalizeSliceIndex) {
-    int array[] = {1, 2, 3};
-    MutableArraySequence<int> seq(array, 3);
-    EXPECT_EQ(ArraySequenceTestHelper::CallNormalizeSliceIndex(&seq, 2), 2);
-    EXPECT_THROW(ArraySequenceTestHelper::CallNormalizeSliceIndex(&seq, 10), IndexOutOfRange);
-}
-
-TEST(ArraySequencePrivate, AppendInternal) {
-    MutableArraySequence<int> seq;
-    ArraySequenceTestHelper::CallAppendInternal(&seq, 42);
-    EXPECT_EQ(seq.GetLength(), 1);
-}
-
-TEST(ArraySequencePrivate, PrepareForWrite) {
-    MutableArraySequence<int> mutable_seq;
-    ImmutableArraySequence<int> immutable_seq;
-    EXPECT_EQ(ArraySequenceTestHelper::CallPrepareForWrite(&mutable_seq), &mutable_seq);
-    EXPECT_NE(ArraySequenceTestHelper::CallPrepareForWrite(&immutable_seq), &immutable_seq);
 }

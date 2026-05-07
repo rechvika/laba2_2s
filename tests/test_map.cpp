@@ -8,20 +8,20 @@ TEST(MapFunction, Normal) {
     int array[] = {1, 2, 3, 4};
     MutableArraySequence<int> seq(array, 4);
     
-    Sequence<int>* squared = Map(seq, [](const int& x) { return x * x; });
+    Sequence<int>* squared = Map(seq, std::function<int(const int&)>([](const int& x) { return x * x; }));
     EXPECT_EQ(squared->GetLength(), 4);
     EXPECT_EQ(squared->Get(0), 1);
     EXPECT_EQ(squared->Get(3), 16);
     delete squared;
     
-    Sequence<std::string>* strings = Map(seq, [](const int& x) { return std::to_string(x); });
+    Sequence<std::string>* strings = Map(seq, std::function<std::string(const int&)>([](const int& x) { return std::to_string(x); }));
     EXPECT_EQ(strings->Get(0), "1");
     delete strings;
 }
 
 TEST(MapFunction, Empty) {
     MutableArraySequence<int> seq;
-    Sequence<int>* mapped = Map(seq, [](const int& x) { return x * 2; });
+    Sequence<int>* mapped = Map(seq, std::function<int(const int&)>([](const int& x) { return x * 2; }));
     EXPECT_EQ(mapped->GetLength(), 0);
     delete mapped;
 }
@@ -30,7 +30,7 @@ TEST(MapIndexedFunction, Normal) {
     int array[] = {10, 20, 30};
     MutableArraySequence<int> seq(array, 3);
     
-    Sequence<int>* result = MapIndexed(seq, [](const int& x, size_t i) { return x + i; });
+    Sequence<int>* result = MapIndexed(seq, std::function<int(const int&, size_t)>([](const int& x, size_t i) { return x + i; }));
     EXPECT_EQ(result->Get(0), 10);
     EXPECT_EQ(result->Get(1), 21);
     EXPECT_EQ(result->Get(2), 32);
@@ -41,12 +41,12 @@ TEST(FlatMapFunction, Normal) {
     int array[] = {1, 2, 3};
     MutableArraySequence<int> seq(array, 3);
     
-    Sequence<int>* expanded = FlatMap(seq, [](const int& x) {
+    Sequence<int>* expanded = FlatMap(seq, std::function<DynamicArray<int>(const int&)>([](const int& x) {
         DynamicArray<int> result(2);
         result.Set(0, x);
         result.Set(1, x * 10);
         return result;
-    });
+    }));
     EXPECT_EQ(expanded->GetLength(), 6);
     EXPECT_EQ(expanded->Get(0), 1);
     EXPECT_EQ(expanded->Get(5), 30);

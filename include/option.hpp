@@ -22,12 +22,18 @@ class Option {
   }
 
   const T& Value() const {
+    if (!has_value_) {
+        throw std::runtime_error("Ошибка, неподходящее значение");
+    }
     return value_;
   }
 
   T& Value() {
+    if (!has_value_) {
+        throw std::runtime_error("Ошибка, неподходящее значение");
+    }
     return value_;
-  }
+}
 
   const T& ValueOr(const T& fallback) const {
     return has_value_ ? value_ : fallback;

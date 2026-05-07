@@ -23,7 +23,6 @@ size_t g_selected_type = 0;
 std::string g_value_str = "0";
 std::string g_index_str = "1";
 std::string g_status = "Готов";
-size_t g_selected_button = 0;
 
 size_t GetValue() {
     if (g_value_str.empty()) return 0;

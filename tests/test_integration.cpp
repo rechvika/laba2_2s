@@ -7,15 +7,15 @@
 
 using namespace lab2;
 
-TEST(Integration, BuilderToMapToWhere) {
-    Builder<int> builder;
+TEST(size_tegration, BuilderToMapToWhere) {
+    Builder<size_t> builder;
     builder.Add(1).Add(2).Add(3).Add(4).Add(5);
     
-    MutableArraySequence<int>* seq = builder.BuildMutableArray();
-    Sequence<int>* squared = Map(*seq, [](const int& x) { return x * x; });
+    MutableArraySequence<size_t>* seq = builder.BuildMutableArray();
+    Sequence<size_t>* squared = Map(*seq, std::function<size_t(const size_t&)>([](const size_t& x) { return x * x; }));
     delete seq;
     
-    Sequence<int>* evenSquares = squared->Where([](const int& x) { return x % 2 == 0; });
+    Sequence<size_t>* evenSquares = squared->Where([](const size_t& x) { return x % 2 == 0; });
     delete squared;
     
     EXPECT_EQ(evenSquares->GetLength(), 2);
@@ -41,12 +41,12 @@ TEST(Integration, BitSequenceChainOperations) {
 }
 
 TEST(Integration, ZipUnzipRoundTrip) {
-    int array1[] = {1, 2, 3};
-    int array2[] = {4, 5, 6};
-    MutableArraySequence<int> left(array1, 3);
-    MutableArraySequence<int> right(array2, 3);
+    size_t array1[] = {1, 2, 3};
+    size_t array2[] = {4, 5, 6};
+    MutableArraySequence<size_t> left(array1, 3);
+    MutableArraySequence<size_t> right(array2, 3);
     
-    Sequence<std::pair<int, int>>* zipped = Zip(left, right);
+    Sequence<std::pair<size_t, size_t>>* zipped = Zip(left, right);
     auto unzipped = Unzip(*zipped);
     delete zipped;
     
@@ -60,25 +60,25 @@ TEST(Integration, ZipUnzipRoundTrip) {
 }
 
 TEST(Integration, ComplexPipeline) {
-    MutableArraySequence<int> numbers;
-    for (int i = 1; i <= 10; ++i) numbers.Append(i);
+    MutableArraySequence<size_t> numbers;
+    for (size_t i = 1; i <= 10; ++i) numbers.Append(i);
     
-    Sequence<int>* evens = numbers.Where([](const int& x) { return x % 2 == 0; });
-    Sequence<int>* squares = Map(*evens, [](const int& x) { return x * x; });
+    Sequence<size_t>* evens = numbers.Where([](const size_t& x) { return x % 2 == 0; });
+    Sequence<size_t>* squares = Map(*evens, std::function<size_t(const size_t&)>([](const size_t& x) { return x * x; }));
     delete evens;
     
-    int sum = squares->Reduce(0, [](const int& acc, const int& x) { return acc + x; });
+    size_t sum = squares->Reduce<size_t>(0, std::function<size_t(const size_t&, const size_t&)>([](const size_t& acc, const size_t& x) { return acc + x; }));
     delete squares;
     
     EXPECT_EQ(sum, 220);
 }
 
 TEST(Integration, DifferentStorageTypes) {
-    int data[] = {1, 2, 3, 4, 5};
+    size_t data[] = {1, 2, 3, 4, 5};
     
-    MutableArraySequence<int> arraySeq(data, 5);
-    MutableListSequence<int> listSeq(data, 5);
-    ImmutableArraySequence<int> immutableArray(data, 5);
+    MutableArraySequence<size_t> arraySeq(data, 5);
+    MutableListSequence<size_t> listSeq(data, 5);
+    ImmutableArraySequence<size_t> immutableArray(data, 5);
     
     for (size_t i = 0; i < 5; ++i) {
         EXPECT_EQ(arraySeq.Get(i), listSeq.Get(i));
@@ -93,7 +93,7 @@ TEST(Integration, RangeOperations) {
     Sequence<int>* range = Range(0, 10, 2);
     EXPECT_EQ(range->GetLength(), 5);
     
-    Sequence<int>* doubled = Map(*range, [](const int& x) { return x * 2; });
+Sequence<int>* doubled = Map(*range, std::function<int(const int&)>([](const int& x) { return x * 2; }));
     delete range;
     
     EXPECT_EQ(doubled->Get(0), 0);

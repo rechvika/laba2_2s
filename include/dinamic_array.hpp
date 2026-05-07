@@ -20,6 +20,9 @@ class DynamicArray : public ICollection<T> {
   }
 
   DynamicArray(const T* items, size_t count) : size_(0), data_(nullptr) {
+    if (items == nullptr) {
+      throw InvalidArgument("Ошибка, указатель на массив нулевой");
+    }
     Allocate(count);
     for (size_t i = 0; i < count; ++i) {
       data_[i] = items[i];
@@ -61,7 +64,9 @@ class DynamicArray : public ICollection<T> {
   }
 
   void Resize(size_t new_size) {
-
+    if (new_size > 1024 * 1024 * 100) {
+        throw InvalidArgument("Ошибка, слишком большой размер");
+    }
     std::unique_ptr<T[]> new_data = (new_size == 0 ? nullptr : std::make_unique<T[]>(new_size));
     const size_t copy_count = std::min(size_, new_size);
     for (size_t i = 0; i < copy_count; ++i) {
@@ -89,6 +94,9 @@ class DynamicArray : public ICollection<T> {
   std::unique_ptr<T[]> data_;
 
   void Allocate(size_t size) {
+    if (size > 1024 * 1024 * 100) {
+        throw InvalidArgument("Ошибка, азмер большой");
+    }
     size_ = size;
     data_ = (size == 0 ? nullptr : std::make_unique<T[]>(size));
     for (size_t i = 0; i < size_; ++i) {

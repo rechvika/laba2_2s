@@ -34,13 +34,12 @@ TEST(IndexOutOfRange, ConstructorAndThrow) {
 
 TEST(EmptyCollection, ConstructorAndThrow) {
     EmptyCollection e("ошибка, пусто");
-    EXPECT_STREQ(e.what(), "ошибка");
-    
+    EXPECT_STREQ(e.what(), "ошибка, пусто");
     try {
-        throw EmptyCollection("ошибка");
+        throw EmptyCollection("ошибка, пусто");
         FAIL();
     } catch (const EmptyCollection& e) {
-        EXPECT_STREQ(e.what(), "ошибка");
+        EXPECT_STREQ(e.what(), "ошибка, пусто");
     }
 }
 
