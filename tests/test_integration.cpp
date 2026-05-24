@@ -93,7 +93,7 @@ TEST(Integration, RangeOperations) {
     Sequence<int>* range = Range(0, 10, 2);
     EXPECT_EQ(range->GetLength(), 5);
     
-Sequence<int>* doubled = Map(*range, std::function<int(const int&)>([](const int& x) { return x * 2; }));
+  Sequence<int>* doubled = Map(*range, std::function<int(const int&)>([](const int& x) { return x * 2; }));
     delete range;
     
     EXPECT_EQ(doubled->Get(0), 0);

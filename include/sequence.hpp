@@ -12,6 +12,11 @@ namespace lab2 {
 
 namespace detail {
 
+  template <class T>
+  auto id(T t) -> T {
+    return t;
+  }
+
 template <class T>
 void TakeResult(std::unique_ptr<T>& owner, T* next) {
   if (next != owner.get()) {
@@ -47,51 +52,72 @@ class Sequence : public ICollection<T> {
   virtual Sequence<T>* CreateEmpty() const = 0;
   virtual const char* StorageName() const = 0;
 
-  Option<T> TryFirst(const std::function<bool(const T&)>& pred = nullptr) const {
+  Option<T> TryFirst() const {
     if (GetLength() == 0) {
-      return Option<T>::None();
+        return Option<T>::None();
     }
+    return Option<T>(GetFirst());
+  }
+
+  Option<T> TryFirst(const std::function<bool(const T&)>& pred) const {
     if (!pred) {
-      return Option<T>(GetFirst());
+        throw InvalidArgument("Передана пустая предикатная функция");
     }
-    for (size_t i = 0; i < GetLength(); ++i) {
-      T value = Get(i);
-      if (pred(value)) {
-        return Option<T>(value);
-      }
+    
+    if (GetLength() == 0) {
+        return Option<T>::None();
+    }
+
+    auto enumerator = GetEnumerator();
+    while (enumerator->MoveNext()) {
+        T value = enumerator->Current();
+        if (pred(value)) {
+            return Option<T>(value);
+        }
     }
     return Option<T>::None();
   }
 
-  Option<T> TryLast(const std::function<bool(const T&)>& pred = nullptr) const {
+  Option<T> TryLast() const {
     if (GetLength() == 0) {
-      return Option<T>::None();
+        return Option<T>::None();
     }
+    return Option<T>(GetLast());
+  }
+
+  Option<T> TryLast(const std::function<bool(const T&)>& pred) const {
     if (!pred) {
-      return Option<T>(GetLast());
+        throw InvalidArgument("Передана пустая предикатная функция");
     }
-    for (size_t i = GetLength() - 1; i >= 0; --i) {
-      T value = Get(i);
-      if (pred(value)) {
-        return Option<T>(value);
-      }
+    
+    if (GetLength() == 0) {
+        return Option<T>::None();
+    }
+
+    for (size_t i = GetLength(); i > 0; --i) {
+        const T& value = Get(i - 1);
+        if (pred(value)) {
+            return Option<T>(value);
+        }
     }
     return Option<T>::None();
-  }
+}
 
   template <class U>
   U Reduce(U initial, const std::function<U(const U&, const T&)>& reducer) const {
     U result = initial;
-    for (size_t i = 0; i < GetLength(); ++i) {
-      result = reducer(result, Get(i));
+    auto enumerator = GetEnumerator();
+    while (enumerator->MoveNext()) {
+        result = reducer(result, enumerator->Current());
     }
     return result;
-  }
+}
 
   Sequence<T>* Where(const std::function<bool(const T&)>& pred) const {
     std::unique_ptr<Sequence<T>> result(CreateEmpty());
-    for (size_t i = 0; i < GetLength(); ++i) {
-      T value = Get(i);
+    auto enumerator = GetEnumerator();
+    while (enumerator->MoveNext()) {
+        T value = enumerator->Current();
       if (pred(value)) {
         Sequence<T>* next = result->Append(value);
         detail::TakeResult(result, next);
@@ -100,7 +126,11 @@ class Sequence : public ICollection<T> {
     return result.release();
   }
 
-  T operator[](size_t index) const {
+  T& operator[](size_t index) {
+    throw InvalidArgument("Оператор [] не подходит для неизменяемой последовательности");
+  }
+
+  const T& operator[](size_t index) const {
     return Get(index);
   }
 
@@ -111,24 +141,23 @@ template <class T>
 class SequenceEnumerator : public IEnumerator<T> {
  public:
   explicit SequenceEnumerator(const Sequence<T>& sequence)
-      : sequence_(sequence), index_(-1), current_() {
+      : sequence_(sequence), index_(0), current_() {
   }
 
   bool MoveNext() override {
-    if (index_ + 1 >= sequence_.GetLength()) {
-      return false;
+    if (index_ >= sequence_.GetLength()) {
+        return false;
     }
-    ++index_;
     current_ = sequence_.Get(index_);
+    ++index_;
     return true;
-  }
-
+}
   T Current() const override {
     return current_;
   }
 
   void Reset() override {
-    index_ = -1;
+    index_ = 0;
     current_ = T();
   }
 

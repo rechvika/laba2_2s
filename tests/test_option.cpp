@@ -43,7 +43,7 @@ TEST(OptionValue, Access) {
 
 TEST(OptionValue, EmptyThrows) {
     Option<int> opt;
-    EXPECT_THROW(opt.Value(), std::runtime_error);
+    EXPECT_THROW(opt.Value(), InvalidArgument);
 }
 
 TEST(OptionValueOr, Normal) {
@@ -66,4 +66,12 @@ TEST(OptionType, DifferentTypes) {
     
     Option<bool> opt3(true);
     EXPECT_EQ(opt3.Value(), true);
+}
+
+TEST(OptionValueOr, ConstCorrectness) {
+    const Option<int> opt(42);
+    EXPECT_EQ(opt.ValueOr(0), 42);
+    
+    const Option<int> empty;
+    EXPECT_EQ(empty.ValueOr(100), 100);
 }

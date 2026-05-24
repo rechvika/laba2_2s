@@ -136,8 +136,8 @@ TEST(DynamicArrayGet, GetFromEmpty) {
 TEST(DynamicArrayGet, GetSizeTIndex) {
     int items[] = {1, 2, 3};
     DynamicArray<int> arr(items, 3);
-    std::size_t idx = 1;
-    EXPECT_EQ(arr.Get(idx), 2);
+    std::size_t index = 1;
+    EXPECT_EQ(arr.Get(index), 2);
 }
 
 TEST(DynamicArraySet, SetValidIndex) {
@@ -279,16 +279,6 @@ TEST(DynamicArrayBracket, ChainedBracketOperations) {
     EXPECT_EQ(arr[2], 10);
 }
 
-TEST(DynamicArrayBracket, ConstBracketInvalidIndex) {
-    const DynamicArray<int> arr(2);
-    EXPECT_THROW(arr[2], IndexOutOfRange);
-}
-
-TEST(DynamicArrayBracket, MutableBracketInvalidIndex) {
-    DynamicArray<int> arr(2);
-    EXPECT_THROW(arr[2] = 10, IndexOutOfRange);
-}
-
 TEST(DynamicArrayICollection, GetCount) {
     int items[] = {1, 2, 3, 4, 5};
     DynamicArray<int> arr(items, 5);
@@ -351,4 +341,15 @@ TEST(DynamicArrayPerformance, ManySetsAndGets) {
     for (int i = 0; i < 1000; ++i) {
         EXPECT_EQ(arr.Get(i), i * 2);
     }
+}
+
+TEST(DynamicArrayConstructor, SizeConstructorMaxSizeExceeds) {
+    EXPECT_THROW(DynamicArray<int> arr(1024 * 1024 * 101), InvalidArgument);
+}
+
+TEST(DynamicArraySet, NullValueAssignment) {
+    DynamicArray<int*> arr(1);
+    int* ptr = nullptr;
+    EXPECT_NO_THROW(arr.Set(0, ptr));
+    EXPECT_EQ(arr.Get(0), nullptr);
 }

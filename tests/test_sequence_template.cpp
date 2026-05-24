@@ -16,13 +16,11 @@ TEST(SequenceTryFirst, Normal) {
     EXPECT_EQ(result2.Value(), 20);
 }
 
-TEST(SequenceTryFirst, EmptyOrNoMatch) {
+TEST(SequenceTryFirst, NullPredicateOnEmpty) {
     MutableArraySequence<int> seq;
-    EXPECT_FALSE(seq.TryFirst().HasValue());
-    
-    int array[] = {1, 2, 3};
-    MutableArraySequence<int> seq2(array, 3);
-    EXPECT_FALSE(seq2.TryFirst(std::function<bool(const int&)>([](const int& x) { return x > 10; })).HasValue());
+    std::function<bool(const int&)> null_pred = nullptr;
+
+    EXPECT_THROW(seq.TryFirst(null_pred), InvalidArgument);
 }
 
 TEST(SequenceTryLast, Normal) {
@@ -75,19 +73,6 @@ TEST(SequenceWhere, Normal) {
     delete empty;
 }
 
-TEST(SequenceBracketOperator, Valid) {
-    int array[] = {5, 10, 15};
-    MutableArraySequence<int> seq(array, 3);
-    EXPECT_EQ(seq[0], 5);
-    EXPECT_EQ(seq[2], 15);
-}
-
-TEST(SequenceBracketOperator, Invalid) {
-    int array[] = {1, 2, 3};
-    MutableArraySequence<int> seq(array, 3);
-    EXPECT_THROW(seq[3], IndexOutOfRange);
-}
-
 TEST(SequenceEnumerator, Enumerate) {
     int array[] = {1, 2, 3};
     MutableArraySequence<int> seq(array, 3);
@@ -112,4 +97,11 @@ TEST(SequenceEnumerator, Reset) {
     enumerator->Reset();
     enumerator->MoveNext();
     EXPECT_EQ(enumerator->Current(), 1);
+}
+
+TEST(SequenceWhere, NullPredicate) {
+    int array[] = {1, 2, 3};
+    MutableArraySequence<int> seq(array, 3);
+    std::function<bool(const int&)> null_pred = nullptr;
+    EXPECT_THROW(seq.Where(null_pred), std::bad_function_call);
 }

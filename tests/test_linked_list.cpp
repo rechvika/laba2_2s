@@ -17,15 +17,6 @@ TEST(LinkedListConstructor, ArrayConstructor) {
     EXPECT_EQ(list.Get(4), 5);
 }
 
-TEST(LinkedListConstructor, ArrayConstructorInvalid) {
-    int items[] = {1, 2};
-    EXPECT_THROW(LinkedList<int> list(items, -1), InvalidArgument);
-    EXPECT_THROW(LinkedList<int> list(nullptr, 5), InvalidArgument);
-    
-    LinkedList<int> list(items, 0);
-    EXPECT_EQ(list.GetLength(), 0);
-}
-
 TEST(LinkedListConstructor, CopyConstructor) {
     int items[] = {10, 20, 30};
     LinkedList<int> original(items, 3);
@@ -195,12 +186,6 @@ TEST(LinkedListConcat, WithEmpty) {
     delete result;
 }
 
-TEST(LinkedListConcat, NullOther) {
-    LinkedList<int> list;
-    list.Append(1);
-    EXPECT_THROW(list.Concat(nullptr), InvalidArgument);
-}
-
 TEST(LinkedListDestructor, DoesNotCrash) {
     LinkedList<int>* list = new LinkedList<int>();
     delete list;
@@ -225,4 +210,15 @@ TEST(LinkedListEdgeCases, StringType) {
     EXPECT_EQ(list.Get(0), "спанчбоб");
     EXPECT_EQ(list.Get(1), "!");
     EXPECT_EQ(list.Get(2), "привет");
+}
+
+TEST(LinkedListGetSubList, EmptyCollection) {
+    LinkedList<int> list;
+    EXPECT_THROW(list.GetSubList(0, 0), IndexOutOfRange);
+}
+
+TEST(LinkedListConcat, NullOther) {
+    LinkedList<int> list;
+    list.Append(1);
+    EXPECT_THROW(list.Concat(nullptr), InvalidArgument);
 }

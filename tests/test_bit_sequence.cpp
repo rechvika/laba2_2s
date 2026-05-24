@@ -165,3 +165,15 @@ TEST(BitSequenceStorageName, Name) {
     BitSequence seq;
     EXPECT_STREQ(seq.StorageName(), "BitSequence");
 }
+
+TEST(BitSequenceSlice, NullReplacement) {
+    BitSequence seq("10110");
+    EXPECT_NO_THROW(seq.Slice(1, 2, nullptr));
+    EXPECT_EQ(seq.ToBitString(), "110");
+}
+
+TEST(BitSequenceInsertAt, EmptyCollectionPrepend) {
+    BitSequence seq;
+    EXPECT_NO_THROW(seq.Prepend(Bit(1)));
+    EXPECT_EQ(seq.ToBitString(), "1");
+}

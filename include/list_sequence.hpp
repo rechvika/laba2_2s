@@ -57,7 +57,9 @@ class ListSequence : public Sequence<T> {
 
   Sequence<T>* InsertAt(const T& item, size_t index) override {
     if (index >= GetLength()) {
-      throw IndexOutOfRange("Ошибка, индекс не из диапазона");
+      throw IndexOutOfRange("Ошибка, индекс " + std::to_string(index) + 
+                              " больше допустимого максимального значения " + 
+                              std::to_string(GetLength() - 1));
     }
     return PrepareForWrite()->InsertAtInternal(item, index);
   }
@@ -101,42 +103,58 @@ class ListSequence : public Sequence<T> {
   }
 
   ListSequence<T>* SliceInternal(size_t index, size_t count, const Sequence<T>* replacement) {
-
     const size_t start = NormalizeSliceIndex(index);
     const size_t available = GetLength() - start;
     const size_t remove_count = std::min(count, available);
     LinkedList<T> rebuilt;
-    for (size_t i = 0; i < start; ++i) {
-      rebuilt.Append(items_.Get(i));
+    
+    auto enumerator = items_.GetEnumerator();
+    for (size_t i = 0; i < start && enumerator->MoveNext(); ++i) {
+        rebuilt.Append(enumerator->Current());
     }
+    
     if (replacement != nullptr) {
-      for (size_t i = 0; i < replacement->GetLength(); ++i) {
-        rebuilt.Append(replacement->Get(i));
-      }
+        auto replEnum = replacement->GetEnumerator();
+        while (replEnum->MoveNext()) {
+            rebuilt.Append(replEnum->Current());
+        }
     }
-    for (size_t i = start + remove_count; i < GetLength(); ++i) {
-      rebuilt.Append(items_.Get(i));
+    
+    for (size_t i = 0; i < remove_count && enumerator->MoveNext(); ++i) {}
+    
+    while (enumerator->MoveNext()) {
+        rebuilt.Append(enumerator->Current());
     }
+    
     items_ = rebuilt;
     return this;
-  }
+}
 
   ListSequence<T>* ConcatInternal(const Sequence<T>& other) {
-    for (size_t i = 0; i < other.GetLength(); ++i) {
-      items_.Append(other.Get(i));
+    auto enumerator = other.GetEnumerator();
+    while (enumerator->MoveNext()) {
+        items_.Append(enumerator->Current());
     }
     return this;
-  }
+}
 
   void ValidateClosedRange(size_t start_index, size_t end_index) const {
     if (GetLength() == 0) {
-      throw EmptyCollection("Ошибка, индекс равено 0");
+      throw EmptyCollection("Ошибка, последовательность пустая");
     }
-    if (start_index >= GetLength() || end_index >= GetLength()) {
-      throw IndexOutOfRange("Ошибка, индекс не из диапазона");
+    if (start_index >= GetLength()) {
+      throw IndexOutOfRange("Ошибка, стартовый индекс " + std::to_string(start_index) + 
+                              " больше допустимого максимального значения " + 
+                              std::to_string(GetLength() - 1));
+    }
+    if (end_index >= GetLength()) {
+      throw IndexOutOfRange("Ошибка, конечный индекс " + std::to_string(end_index) + 
+                              " больше допустимого максимального значения " + 
+                              std::to_string(GetLength() - 1));
     }
     if (start_index > end_index) {
-      throw InvalidArgument("Ошибка, стартовый индекс больше конечного");
+      throw InvalidArgument("Ошибка, стартовый индекс " + std::to_string(start_index) + 
+                              " больше конечного индекса " + std::to_string(end_index));
     }
   }
 
@@ -144,7 +162,9 @@ class ListSequence : public Sequence<T> {
     size_t normalized = index;
 
     if (normalized > GetLength()) {
-      throw IndexOutOfRange("Ошибка, индекс не из диапазона");
+      throw IndexOutOfRange("Ошибка, индекс " + std::to_string(index) + 
+                              " больше допустимого максимального значения " + 
+                              std::to_string(GetLength()));
     }
     return normalized;
   }

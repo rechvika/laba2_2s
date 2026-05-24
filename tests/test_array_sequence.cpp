@@ -129,8 +129,13 @@ TEST(MutableArraySequenceSlice, Replace) {
     int replacement_items[] = {10, 20};
     MutableArraySequence<int> replacement(replacement_items, 2);
     seq.Slice(1, 2, &replacement);
+
     EXPECT_EQ(seq.GetLength(), 5);
+    EXPECT_EQ(seq.Get(0), 1);
     EXPECT_EQ(seq.Get(1), 10);
+    EXPECT_EQ(seq.Get(2), 20);
+    EXPECT_EQ(seq.Get(3), 4);
+    EXPECT_EQ(seq.Get(4), 5);
 }
 
 TEST(MutableArraySequenceSlice, Invalid) {
@@ -146,6 +151,9 @@ TEST(MutableArraySequenceConcat, Normal) {
     MutableArraySequence<int> seq2(array2, 3);
     seq1.Concat(seq2);
     EXPECT_EQ(seq1.GetLength(), 6);
+    EXPECT_EQ(seq1.Get(0), 1);
+    EXPECT_EQ(seq1.Get(3), 4);
+    EXPECT_EQ(seq1.Get(5), 6);
 }
 
 TEST(MutableArraySequenceClone, Normal) {
@@ -183,4 +191,16 @@ TEST(ImmutableArraySequenceModification, ReturnsNew) {
 TEST(ImmutableArraySequenceStorageName, Name) {
     ImmutableArraySequence<int> seq;
     EXPECT_STREQ(seq.StorageName(), "ImmutableArraySequence");
+}
+
+TEST(MutableArraySequenceGetSubsequence, EmptyCollection) {
+    MutableArraySequence<int> seq;
+    EXPECT_THROW(seq.GetSubsequence(0, 0), EmptyCollection);
+}
+
+TEST(MutableArraySequenceSlice, NullReplacement) {
+    int array[] = {1, 2, 3, 4, 5};
+    MutableArraySequence<int> seq(array, 5);
+    EXPECT_NO_THROW(seq.Slice(1, 2, nullptr));
+    EXPECT_EQ(seq.GetLength(), 3);
 }

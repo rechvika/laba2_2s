@@ -18,7 +18,9 @@ class BitSequence : public Sequence<Bit> {
     for (std::size_t i = 0; i < bits.length(); i++) {
       char ch = bits[i];
       if (ch != '0' && ch != '1') {
-        throw InvalidArgument("Ошибка, элемент не удовлетворяет условиям");
+        throw InvalidArgument("Ошибка, символ '" + std::string(1, ch) + 
+                              "' на позиции " + std::to_string(i) + 
+                              " не является допустимым битом (допустимые символы: '0', '1')");
       }
       Append(Bit(ch == '1'));
     }
@@ -26,8 +28,9 @@ class BitSequence : public Sequence<Bit> {
 
   BitSequence(const Bit* items, size_t count) : words_(), length_(0) {
     ResizeBits(count);
-    for (size_t i = 0; i < count; ++i) {
-      SetBitInternal(i, items[i].Value() != 0);
+    size_t index = 0;
+    for (const Bit* it = items; it != items + count; ++it, ++index) {
+        SetBitInternal(index, it->Value() != 0);
     }
   }
 
@@ -36,14 +39,14 @@ class BitSequence : public Sequence<Bit> {
 
   Bit GetFirst() const override {
     if (length_ == 0) {
-      throw EmptyCollection("Ошибка, длина равна 0");
+      throw EmptyCollection("Ошибка, длина списка равна 0");
     }
     return Get(0);
   }
 
   Bit GetLast() const override {
     if (length_ == 0) {
-      throw EmptyCollection("Ошибка, длина равна 0");
+      throw EmptyCollection("Ошибка, длина списка равна 0");
     }
     return Get(length_ - 1);
   }
@@ -87,7 +90,9 @@ class BitSequence : public Sequence<Bit> {
 
   Sequence<Bit>* InsertAt(const Bit& item, size_t index) override {
     if (index >= length_) {
-      throw IndexOutOfRange("Ошибка, индекс не из диапазона");
+      throw IndexOutOfRange("Ошибка, индекс " + std::to_string(index) + 
+                              " больше допустимого максимального значения " + 
+                              std::to_string(length_ - 1));
     }
     return InsertAt(item, index, false);
   }
@@ -97,34 +102,40 @@ class BitSequence : public Sequence<Bit> {
     SetBitInternal(index, item.Value() != 0);
     return this;
   }
-
   Sequence<Bit>* Slice(size_t index, size_t count, const Sequence<Bit>* replacement = nullptr) override {
-
     const size_t start = NormalizeSliceIndex(index);
     const size_t available = length_ - start;
-    const size_t remove_count = (count < available) ? count : available;
+    const size_t remove_count = std::min(count, available);
+    
     BitSequence rebuilt;
+
     for (size_t i = 0; i < start; ++i) {
-      rebuilt.Append(Get(i));
+        rebuilt.Append(Get(i));
     }
+
     if (replacement != nullptr) {
-      for (size_t i = 0; i < replacement->GetLength(); ++i) {
-        rebuilt.Append(replacement->Get(i));
-      }
+        auto replEnum = replacement->GetEnumerator();
+        while (replEnum->MoveNext()) {
+            rebuilt.Append(replEnum->Current());
+        }
     }
+
+    
     for (size_t i = start + remove_count; i < length_; ++i) {
-      rebuilt.Append(Get(i));
+        rebuilt.Append(Get(i));
     }
+    
     *this = rebuilt;
     return this;
-  }
+}
 
   Sequence<Bit>* Concat(const Sequence<Bit>& other) override {
-    for (size_t i = 0; i < other.GetLength(); ++i) {
-      Append(other.Get(i));
+    auto enumerator = other.GetEnumerator();
+    while (enumerator->MoveNext()) {
+        Append(enumerator->Current());
     }
     return this;
-  }
+}
 
   Sequence<Bit>* Clone() const override {
     return new BitSequence(*this);
@@ -239,33 +250,45 @@ class BitSequence : public Sequence<Bit> {
 
   void ValidateIndex(size_t index) const {
     if (index >= length_) {
-      throw IndexOutOfRange("Ошибка, индекс не из диапазона");
+      throw IndexOutOfRange("Ошибка, индекс " + std::to_string(index) + 
+                              " больше допустимого максимального значения " + 
+                              std::to_string(length_ - 1));
     }
   }
 
   void ValidateClosedRange(size_t start_index, size_t end_index) const {
     if (length_ == 0) {
-      throw EmptyCollection("Ошибка, длина равна 0");
+      throw EmptyCollection("Ошибка, длина списка равна 0");
     }
-    if (start_index >= length_ || end_index >= length_) {
-      throw IndexOutOfRange("Ошибка, индексы не из диапазона");
+    if (start_index >= length_) {
+      throw IndexOutOfRange("Ошибка, стартовый индекс " + std::to_string(start_index) + 
+                              " больше допустимого максимального значения " + 
+                              std::to_string(length_ - 1));
+    }
+    if (end_index >= length_) {
+      throw IndexOutOfRange("Ошибка, конечный индекс " + std::to_string(end_index) + 
+                              " больше допустимого максимального значения " + 
+                              std::to_string(length_ - 1));
     }
     if (start_index > end_index) {
-      throw InvalidArgument("Ошибка, начальный индекс больше конечного");
+      throw InvalidArgument("Ошибка, стартовый индекс " + std::to_string(start_index) + 
+                              " больше конечного индекса " + std::to_string(end_index));
     }
   }
 
   size_t NormalizeSliceIndex(size_t index) const {
     size_t normalized = index;
     if (normalized > length_) {
-      throw IndexOutOfRange("Ошибка, индекс не из диапазона");
+      throw IndexOutOfRange("Ошибка, индекс " + std::to_string(index) + 
+                              " больше допустимого максимального значения " + 
+                              std::to_string(length_));
     }
     return normalized;
   }
 
   void ValidateEqualLength(const BitSequence& other) const {
     if (length_ != other.length_) {
-      throw InvalidArgument("Ошибка, длины не равны");
+      throw InvalidArgument("Ошибка, длины последовательностей не равны");
     }
   }
 
@@ -283,7 +306,9 @@ class BitSequence : public Sequence<Bit> {
       return this;
     }
     if (index > length_ || (!allow && index == length_)) {
-      throw IndexOutOfRange("Ошибка, индекс не из диапазона");
+      throw IndexOutOfRange("Ошибка, индекс " + std::to_string(index) + 
+                              " больше допустимого максимального значения " + 
+                              std::to_string(length_ - 1));
     }
     const size_t old_length = length_;
     ResizeBits(length_ + 1);

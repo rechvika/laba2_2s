@@ -1,14 +1,22 @@
 #pragma once
 
-#include <stdexcept>
 #include <string>
 
 namespace lab2 {
 
-class LabException : public std::runtime_error {
+class LabException {
  public:
-  explicit LabException(const std::string& message) : std::runtime_error(message) {
+  explicit LabException(const std::string& message) : message_(message) {
   }
+
+  virtual ~LabException() = default;
+
+  virtual const char* what() const noexcept {
+    return message_.c_str();
+  }
+
+ private:
+  std::string message_;
 };
 
 class InvalidArgument : public LabException {

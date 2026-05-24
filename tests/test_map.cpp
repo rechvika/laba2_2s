@@ -116,3 +116,16 @@ TEST(RangeFunction, Empty) {
     EXPECT_EQ(result->GetLength(), 0);
     delete result;
 }
+
+TEST(MapFunction, NullMapper) {
+    int array[] = {1, 2, 3};
+    MutableArraySequence<int> seq(array, 3);
+    std::function<int(const int&)> null_mapper = nullptr;
+    EXPECT_THROW(Map(seq, null_mapper), std::bad_function_call);
+}
+
+TEST(RangeFunction, NegativeStepWithWrongBounds) {
+    Sequence<int>* result = Range(1, 5, -1);
+    EXPECT_EQ(result->GetLength(), 0);
+    delete result;
+}

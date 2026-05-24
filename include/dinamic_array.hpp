@@ -6,11 +6,13 @@
 
 #include "exception.hpp"
 #include "icollection.hpp"
+#include "ienumerator.hpp"
 
 namespace lab2 {
 
 template <class T>
 class DynamicArray : public ICollection<T> {
+  static constexpr size_t max_size_ = 1024 * 1024 * 100;
  public:
   DynamicArray() : size_(0), data_(nullptr) {
   }
@@ -19,8 +21,8 @@ class DynamicArray : public ICollection<T> {
     Allocate(size);
   }
 
-  DynamicArray(const T* items, size_t count) : size_(0), data_(nullptr) {
-    if (items == nullptr) {
+  DynamicArray(const T* items, size_t count) : DynamicArray() {
+    if (items == nullptr && count > 0) {
       throw InvalidArgument("Ошибка, указатель на массив нулевой");
     }
     Allocate(count);
@@ -29,21 +31,22 @@ class DynamicArray : public ICollection<T> {
     }
   }
 
-  DynamicArray(const DynamicArray<T>& other) : size_(0), data_(nullptr) {
+  DynamicArray(const DynamicArray<T>& other) : DynamicArray() {
     Allocate(other.size_);
     for (size_t i = 0; i < size_; ++i) {
-      data_[i] = other.data_[i];
+        data_[i] = other.data_[i];
     }
-  }
+}
 
   DynamicArray<T>& operator=(const DynamicArray<T>& other) {
-    if (this == &other) {
-      return *this;
+    if (this != &other) {
+        Resize(other.size_);
+        for (size_t i = 0; i < size_; ++i) {
+            data_[i] = other.data_[i];
+        }
     }
-    DynamicArray<T> copy(other);
-    Swap(copy);
     return *this;
-  }
+}
 
   T Get(size_t index) const {
     ValidateIndex(index);
@@ -55,38 +58,80 @@ class DynamicArray : public ICollection<T> {
   }
 
   std::size_t GetCount() const override {
-    return static_cast<std::size_t>(size_);
+    return size_;
   }
 
-  void Set(size_t index, const T& value) {
+  T* Set(size_t index, const T& value) {
     ValidateIndex(index);
     data_[index] = value;
+    return &data_[index];
   }
 
   void Resize(size_t new_size) {
-    if (new_size > 1024 * 1024 * 100) {
-        throw InvalidArgument("Ошибка, слишком большой размер");
+    if (new_size > max_size_) {
+        throw InvalidArgument("Ошибка, размер " + std::to_string(new_size) + 
+                              " больше допустимого максимального значения " + 
+                              std::to_string(max_size_));
     }
-    std::unique_ptr<T[]> new_data = (new_size == 0 ? nullptr : std::make_unique<T[]>(new_size));
+    std::unique_ptr<T[]> new_data;
+    if (new_size > 0) {
+        new_data = std::make_unique<T[]>(new_size);
+    }
     const size_t copy_count = std::min(size_, new_size);
     for (size_t i = 0; i < copy_count; ++i) {
-      new_data[i] = data_[i];
-    }
-    for (size_t i = copy_count; i < new_size; ++i) {
-      new_data[i] = T();
+        if (data_) {
+            new_data[i] = data_[i];
+        }
     }
     data_ = std::move(new_data);
     size_ = new_size;
-  }
+}
 
   const T& operator[](size_t index) const {
-    ValidateIndex(index);
     return data_[index];
   }
 
   T& operator[](size_t index) {
-    ValidateIndex(index);
     return data_[index];
+  }
+
+  class Enumerator : public IEnumerator<T> {
+  public:
+    explicit Enumerator(const DynamicArray<T>& array) 
+        : array_(array), index_(0), current_() {}
+    
+    bool MoveNext() override {
+      if (index_ >= array_.GetSize()) {
+        return false;
+      }
+      current_ = array_.Get(index_);
+      ++index_;
+      return true;
+    }
+    
+    T Current() const override {
+      if (index_ == 0) {
+        throw InvalidArgument("Ошибка, вызов Current() до MoveNext()");
+      }
+      if (index_ - 1 >= array_.GetSize()) {
+        throw IndexOutOfRange("Ошибка, итератор вышел за пределы");
+      }
+      return current_;
+    }
+    
+    void Reset() override {
+      index_ = 0;
+      current_ = T();
+    }
+    
+  private:
+    const DynamicArray<T>& array_;
+    size_t index_;
+    T current_;
+  };
+  
+  std::unique_ptr<IEnumerator<T>> GetEnumerator() const {
+    return std::make_unique<Enumerator>(*this);
   }
 
  private:
@@ -94,25 +139,36 @@ class DynamicArray : public ICollection<T> {
   std::unique_ptr<T[]> data_;
 
   void Allocate(size_t size) {
-    if (size > 1024 * 1024 * 100) {
-        throw InvalidArgument("Ошибка, азмер большой");
+    if (size > max_size_) {
+        throw InvalidArgument("Ошибка, размер " + std::to_string(size) + 
+                              " больше допустимого максимального значения " + 
+                              std::to_string(max_size_));
     }
+    if (size == 0) {
+        data_ = nullptr;
+        size_ = 0;
+        return;
+    }
+    data_ = std::make_unique<T[]>(size);
     size_ = size;
-    data_ = (size == 0 ? nullptr : std::make_unique<T[]>(size));
-    for (size_t i = 0; i < size_; ++i) {
-      data_[i] = T();
-    }
   }
 
   void ValidateIndex(size_t index) const {
     if (index >= size_) {
-      throw IndexOutOfRange("Ошибка, индекс не в диапазоне");
+      throw IndexOutOfRange("Ошибка, индекс " + std::to_string(index) + 
+                              " больше допустимого максимального значения " + 
+                              std::to_string(size_ - 1));
     }
   }
 
   void Swap(DynamicArray<T>& other) noexcept {
-    std::swap(size_, other.size_);
-    std::swap(data_, other.data_);
+    size_t temp_size = size_;
+    size_ = other.size_;
+    other.size_ = temp_size;
+    
+    std::unique_ptr<T[]> temp_data = std::move(data_);
+    data_ = std::move(other.data_);
+    other.data_ = std::move(temp_data);
   }
 };
 

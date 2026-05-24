@@ -17,9 +17,12 @@ class ArraySequence : public Sequence<T> {
   ArraySequence(const T* items, size_t count) : items_(items, count) {
   }
 
-  explicit ArraySequence(const LinkedList<T>& list) : items_(list.GetLength()) {
-    for (size_t i = 0; i < list.GetLength(); ++i) {
-      items_.Set(i, list.Get(i));
+  template <class Container>
+  explicit ArraySequence(const Container& container) : items_(container.GetLength()) {
+    auto enumerator = container.GetEnumerator();
+    size_t i = 0;
+    while (enumerator->MoveNext()) {
+      items_.Set(i++, enumerator->Current());
     }
   }
 
@@ -67,7 +70,9 @@ class ArraySequence : public Sequence<T> {
 
   Sequence<T>* InsertAt(const T& item, size_t index) override {
     if (index >= GetLength()) {
-      throw IndexOutOfRange("Ошибка, индекс не из диапазона");
+      throw IndexOutOfRange("Ошибка, индекс " + std::to_string(index) + 
+                              " больше допустимого максимального значения " + 
+                              std::to_string(GetLength() - 1));
     }
     return PrepareForWrite()->InsertAtInternal(item, index);
   }
@@ -78,7 +83,8 @@ class ArraySequence : public Sequence<T> {
 
   Sequence<T>* Slice(size_t index, size_t count, const Sequence<T>* replacement = nullptr) override {
     if (count > GetLength() - index) {
-        throw InvalidArgument("Ошибка, большое количетсво элементов");
+        throw InvalidArgument("Ошибка, количество элементов для удаления " + std::to_string(count) + 
+                              " больше доступного количества " + std::to_string(GetLength() - index));
     }
     return PrepareForWrite()->SliceInternal(index, count, replacement);
   }
@@ -134,8 +140,9 @@ class ArraySequence : public Sequence<T> {
       rebuilt.Set(out++, items_.Get(i));
     }
     if (replacement != nullptr) {
-      for (size_t i = 0; i < replacement->GetLength(); ++i) {
-        rebuilt.Set(out++, replacement->Get(i));
+      auto enumerator = replacement->GetEnumerator();
+      while (enumerator->MoveNext()) {
+        rebuilt.Set(out++, enumerator->Current());
       }
     }
     for (size_t i = start + remove_count; i < GetLength(); ++i) {
@@ -148,8 +155,10 @@ class ArraySequence : public Sequence<T> {
   ArraySequence<T>* ConcatInternal(const Sequence<T>& other) {
     const size_t old_length = GetLength();
     items_.Resize(old_length + other.GetLength());
-    for (size_t i = 0; i < other.GetLength(); ++i) {
-      items_.Set(old_length + i, other.Get(i));
+    auto enumerator = other.GetEnumerator();
+    size_t i = 0;
+    while (enumerator->MoveNext()) {
+      items_.Set(old_length + i++, enumerator->Current());
     }
     return this;
   }
@@ -158,11 +167,19 @@ class ArraySequence : public Sequence<T> {
     if (GetLength() == 0) {
       throw EmptyCollection("Ошибка, объект пустой");
     }
-    if (start_index >= GetLength() || end_index >= GetLength()) {
-      throw IndexOutOfRange("Ошибка, индексы не входят в допустимый диапазон");
+    if (start_index >= GetLength()) {
+      throw IndexOutOfRange("Ошибка, стартовый индекс " + std::to_string(start_index) + 
+                              " больше допустимого максимального значения " + 
+                              std::to_string(GetLength() - 1));
+    }
+    if (end_index >= GetLength()) {
+      throw IndexOutOfRange("Ошибка, конечный индекс " + std::to_string(end_index) + 
+                              " больше допустимого максимального значения " + 
+                              std::to_string(GetLength() - 1));
     }
     if (start_index > end_index) {
-      throw InvalidArgument("Ошибка, стартовый индекс больше конечного индекса");
+      throw InvalidArgument("Ошибка, стартовый индекс " + std::to_string(start_index) + 
+                              " больше конечного индекса " + std::to_string(end_index));
     }
   }
 
@@ -170,7 +187,9 @@ class ArraySequence : public Sequence<T> {
     size_t normalized = index;
 
     if (normalized > GetLength()) {
-      throw IndexOutOfRange("Ошибка, индекс не из диапазона");
+      throw IndexOutOfRange("Ошибка, индекс " + std::to_string(index) + 
+                              " больше допустимого максимального значения " + 
+                              std::to_string(GetLength()));
     }
     return normalized;
   }
